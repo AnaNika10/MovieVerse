@@ -1,0 +1,84 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"extends": [
+		"plugin:react/recommended",
+		"airbnb",
+		"plugin:@typescript-eslint/recommended"
+	],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaFeatures": {
+			"jsx": true
+		},
+		"ecmaVersion": "latest",
+		"sourceType": "module"
+	},
+	"plugins": [
+		"react",
+		"@typescript-eslint"
+	],
+	"settings": {
+		"import/resolver": {
+			"typescript": {}
+		}
+	},
+	"rules": {
+		"import/extensions": [
+			"error",
+			"ignorePackages",
+			{
+				"ts": "never",
+				"tsx": "never"
+			}
+		],
+
+		"no-tabs": "off",
+		"indent": ["error", "tab"],
+		"lines-between-class-members": "off",
+		"prefer-destructuring": "off",
+		"brace-style": "off",
+		"max-classes-per-file": "off",
+		"class-methods-use-this": "off",
+		"no-bitwise": "off",
+		"max-len": ["error", { "code": 160 }],
+		"arrow-body-style": ["error", "always"],
+		"no-plusplus": "off",
+		"object-shorthand": ["error", "never"],
+		"quote-props": ["error", "consistent-as-needed"],
+		"no-underscore-dangle": ["error", { "allowAfterThis": true }],
+		"no-param-reassign": ["error", { "props": false }],
+		"jsx-quotes": ["error", "prefer-single"],
+		"no-continue": "off",
+		"no-undef": "off",
+		"no-restricted-globals": "off",
+		"no-restricted-syntax": "off",
+		"no-console": "off",
+		"import/no-cycle": "off",
+		"no-use-before-define": "off",
+		"no-shadow": "off",
+
+		"react/no-access-state-in-setstate": "off",
+		"react/destructuring-assignment": "off",
+		"react/jsx-indent": [2, "tab"],
+		"react/prefer-stateless-function": "off",
+		"react/jsx-indent-props": [1, "tab"],
+		"react/jsx-boolean-value": ["error", "always"],
+		"react/sort-comp": "off",
+		"react/jsx-filename-extension": [ "warn", {"extensions": [".tsx"]} ],
+
+		"jsx-a11y/alt-text": "off",
+		"jsx-a11y/no-static-element-interactions": "off",
+		"jsx-a11y/click-events-have-key-events": "off",
+		"jsx-a11y/no-noninteractive-element-interactions": "off",
+
+		"@typescript-eslint/indent": ["error", "tab"],
+		"@typescript-eslint/lines-between-class-members": ["error", "always", { "exceptAfterOverload": true, "exceptAfterSingleLine": true }],
+		"@typescript-eslint/brace-style": ["error", "stroustrup"],
+		"@typescript-eslint/no-use-before-define": "off",
+		"@typescript-eslint/no-loop-func": "off",
+		"@typescript-eslint/no-shadow": ["error"]
+	}
+}
