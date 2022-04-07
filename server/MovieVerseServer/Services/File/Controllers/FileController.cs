@@ -8,10 +8,12 @@ using Microsoft.Extensions.Logging;
 using File.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 using System.Security.Principal;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 using Mono.Unix;
+using Microsoft.Extensions.Configuration;
 namespace File.Controllers
 {
     [ApiController]
@@ -22,13 +24,16 @@ namespace File.Controllers
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
         private string originalFileName;
-        private string uniqueFileName = "file.png";
+        private string originalFileExt;
+        private long fileSize;
+        private string uniqueFileName;
         private string uniqueFilePath;
-        private readonly string uploadPath = "Upload";
-        public FileController(IHostEnvironment env, ILogger<FileController> logger)
+        public IConfiguration _config { get; }
+        public FileController(IHostEnvironment env, ILogger<FileController> logger, IConfiguration configuration)
         {
             _env = env;
             _logger = logger;
+            _config = configuration;
         }
 
 
@@ -57,7 +62,7 @@ namespace File.Controllers
             if(System.Runtime.InteropServices.RuntimeInformation
                                                .IsOSPlatform(OSPlatform.Windows))
             {
-                 removeExecutePermissionsWindows(dirPath);
+                removeExecutePermissionsWindows(dirPath);
             }
             else
             {
@@ -74,16 +79,23 @@ namespace File.Controllers
             if(file.FormFile.Length > 0)
             {
                 // Path.Combine should work both on Windows and Unix based OS
-                string path = Path.Combine(_env.ContentRootPath, uploadPath);
+                string path = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
                 if(!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
                     // TODO: test on Windows: ls -l and see if x permissions are missing for every user
                     removeExecutePermissions(path);
                 }
-                // TODO: construct uniqueFileName
-                // TODO: HTML encode originalFileName
-                using (FileStream fileStream = new FileStream(Path.Combine(path, uniqueFileName), FileMode.Create, FileAccess.Write))
+                //db info: 
+                originalFileName = Path.GetFileName(file.FormFile.FileName);
+                originalFileExt = originalFileName.Substring(originalFileName.LastIndexOf("."));
+                originalFileName = WebUtility.HtmlEncode(originalFileName);
+                fileSize = file.FormFile.Length;
+                
+                uniqueFileName = Path.GetRandomFileName();
+                uniqueFilePath = Path.Combine(path, uniqueFileName);
+                
+                using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
                 {
                     await file.FormFile.CopyToAsync(fileStream);
                 }
