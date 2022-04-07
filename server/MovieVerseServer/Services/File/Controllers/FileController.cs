@@ -23,12 +23,14 @@ namespace File.Controllers
 
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
+        public IConfiguration _config { get; }
+        private string[] permittedFileExtensions = {".jpg", ".jpeg", ".gif", ".png"};
         private string originalFileName;
         private string originalFileExt;
         private long fileSize;
         private string uniqueFileName;
         private string uniqueFilePath;
-        public IConfiguration _config { get; }
+        
         public FileController(IHostEnvironment env, ILogger<FileController> logger, IConfiguration configuration)
         {
             _env = env;
@@ -70,10 +72,18 @@ namespace File.Controllers
             }        
             
         }
+        private bool validFileExt(string ext){
 
+            if (string.IsNullOrEmpty(ext) || !permittedFileExtensions.Contains(ext))
+            {
+                return false;
+            }
+            return true;
+        }
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
         public async Task<IActionResult>Post([FromForm]FileModel file)
         {
             if(file.FormFile.Length > 0)
@@ -88,9 +98,14 @@ namespace File.Controllers
                 }
                 //db info: 
                 originalFileName = Path.GetFileName(file.FormFile.FileName);
-                originalFileExt = originalFileName.Substring(originalFileName.LastIndexOf("."));
                 originalFileName = WebUtility.HtmlEncode(originalFileName);
+                originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
+                if(!validFileExt(originalFileExt))
+                {
+                    return StatusCode(415, null);
+                }
                 fileSize = file.FormFile.Length;
+                // _logger.LogInformation("{} {} {}", originalFileName, originalFileExt, fileSize);
                 
                 uniqueFileName = Path.GetRandomFileName();
                 uniqueFilePath = Path.Combine(path, uniqueFileName);
