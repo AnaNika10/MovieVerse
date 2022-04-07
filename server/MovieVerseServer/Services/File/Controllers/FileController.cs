@@ -25,6 +25,35 @@ namespace File.Controllers
         private readonly ILogger<FileController> _logger;
         public IConfiguration _config { get; }
         private string[] permittedFileExtensions = {".jpg", ".jpeg", ".gif", ".png"};
+        private static readonly Dictionary<string, List<byte[]>> _fileSignature = 
+                                            new Dictionary<string, List<byte[]>>
+                                            {
+                                                { ".jpeg", new List<byte[]>
+                                                    {
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE2 },
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE3 },
+                                                    }
+                                                },
+                                                { ".jpg", new List<byte[]>
+                                                    {
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE0 },  	 
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE1 },
+                                                        new byte[] { 0xFF, 0xD8, 0xFF, 0xE8 },
+                                                    }
+                                                },
+                                                { ".gif", new List<byte[]>
+                                                    {
+                                                        new byte[] { 0x47, 0x49, 0x46, 0x38 }
+                                                    }
+                                                },
+                                                { ".png", new List<byte[]>
+                                                    {
+                                                        new byte[] { 0x89, 0x50, 0x4E, 0x47, 
+                                                                     0x0D, 0x0A, 0x1A, 0x0A }
+                                                    }
+                                                },
+                                            };
         private string originalFileName;
         private string originalFileExt;
         private long fileSize;
@@ -72,6 +101,17 @@ namespace File.Controllers
             }        
             
         }
+        
+        private bool vaildFileSignature(string ext, FileModel file){
+            using (var reader = new BinaryReader(file.FormFile.OpenReadStream()))
+            {
+                var signatures = _fileSignature[ext];
+                var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
+                return signatures.Any(signature => 
+                        headerBytes.Take(signature.Length).SequenceEqual(signature));
+            }
+
+        }
         private bool validFileExt(string ext){
 
             if (string.IsNullOrEmpty(ext) || !permittedFileExtensions.Contains(ext))
@@ -80,10 +120,13 @@ namespace File.Controllers
             }
             return true;
         }
+
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        
         public async Task<IActionResult>Post([FromForm]FileModel file)
         {
             if(file.FormFile.Length > 0)
@@ -102,7 +145,7 @@ namespace File.Controllers
                 originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
                 if(!validFileExt(originalFileExt))
                 {
-                    return StatusCode(415, null);
+                    return StatusCode(415, new {message = "Unsupported file format"});
                 }
                 fileSize = file.FormFile.Length;
                 // _logger.LogInformation("{} {} {}", originalFileName, originalFileExt, fileSize);
@@ -110,13 +153,22 @@ namespace File.Controllers
                 uniqueFileName = Path.GetRandomFileName();
                 uniqueFilePath = Path.Combine(path, uniqueFileName);
                 
+                if(!vaildFileSignature(originalFileExt, file)){
+                    _logger.LogInformation("File ext signature failed");
+                    return StatusCode(415, new {message = "File extension signature check failed"});
+                }
                 using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
                 {
+                    
                     await file.FormFile.CopyToAsync(fileStream);
+                    _logger.LogInformation("OK");    
                 }
+                return Ok(new {fileSize = file.FormFile.Length});
             }
-
-            return Ok(new {fileSize = file.FormFile.Length});
+            else
+            {
+                return BadRequest();
+            }
         
         }
 
