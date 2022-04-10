@@ -10,7 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-
+using File.Data;
+using File.Repositories;
+using File.Repositories.Interfaces;
 namespace File
 {
     public class Startup
@@ -26,6 +28,8 @@ namespace File
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddScoped<IFileContext, FileContext>();
+            services.AddScoped<IFileRepository, FileRepository>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
