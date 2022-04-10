@@ -8,7 +8,7 @@ namespace File.Repositories.Interfaces
 {
     public interface IFileRepository
     {
-        Task<IEnumerable<FileDTO>> GetFiles();
+        // Task<IEnumerable<FileDTO>> GetFiles();
         void UploadFile(FileDTO file);
     }
 }

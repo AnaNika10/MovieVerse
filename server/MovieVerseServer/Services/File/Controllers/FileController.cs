@@ -139,7 +139,6 @@ namespace File.Controllers
                     // TODO: test on Windows: ls -l and see if x permissions are missing for every user
                     removeExecutePermissions(path);
                 }
-                //db info: 
                 var originalFileName = Path.GetFileName(file.FormFile.FileName);
                 originalFileName = WebUtility.HtmlEncode(originalFileName);
                 var originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
@@ -164,6 +163,7 @@ namespace File.Controllers
                     _logger.LogInformation("OK");    
                 }
                 _repo.UploadFile(new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userID));
+                //TODO: change to CreatedAtRoute
                 return Ok(new {fileSize = file.FormFile.Length});
             }
             else
@@ -173,14 +173,14 @@ namespace File.Controllers
         
         }
 
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<FileModel>>> GetFiles()
-        {
-            var files = _repo.GetFiles();
+        // [HttpGet]
+        // [ProducesResponseType(StatusCodes.Status200OK)]
+        // public async Task<ActionResult<IEnumerable<FileModel>>> GetFiles()
+        // {
+        //     var files = _repo.GetFiles();
 
-            return Ok(files);
-        }
+        //     return Ok(files);
+        // }
 
     }
 }
