@@ -14,6 +14,8 @@ using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 using Mono.Unix;
 using Microsoft.Extensions.Configuration;
+using File.Repositories.Interfaces;
+using File.DTO;
 namespace File.Controllers
 {
     [ApiController]
@@ -21,6 +23,7 @@ namespace File.Controllers
     public class FileController : ControllerBase
     {
 
+        private readonly IFileRepository _repo;
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
         public IConfiguration _config { get; }
@@ -54,17 +57,13 @@ namespace File.Controllers
                                                     }
                                                 },
                                             };
-        private string originalFileName;
-        private string originalFileExt;
-        private long fileSize;
-        private string uniqueFileName;
-        private string uniqueFilePath;
-        
-        public FileController(IHostEnvironment env, ILogger<FileController> logger, IConfiguration configuration)
+        public FileController(IHostEnvironment env, ILogger<FileController> logger, 
+                                IConfiguration configuration, IFileRepository repo)
         {
             _env = env;
             _logger = logger;
             _config = configuration;
+            _repo = repo;
         }
 
 
@@ -122,12 +121,13 @@ namespace File.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        // [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public async Task<IActionResult>Post([FromForm]FileModel file)
+        public async Task<IActionResult>Post([FromForm]FileModel file, [FromQuery] string userID = "kajaa")
         {
             if(file.FormFile.Length > 0)
             {
@@ -140,18 +140,18 @@ namespace File.Controllers
                     removeExecutePermissions(path);
                 }
                 //db info: 
-                originalFileName = Path.GetFileName(file.FormFile.FileName);
+                var originalFileName = Path.GetFileName(file.FormFile.FileName);
                 originalFileName = WebUtility.HtmlEncode(originalFileName);
-                originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
+                var originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
                 if(!validFileExt(originalFileExt))
                 {
                     return StatusCode(415, new {message = "Unsupported file format"});
                 }
-                fileSize = file.FormFile.Length;
+                var fileSize = file.FormFile.Length;
                 // _logger.LogInformation("{} {} {}", originalFileName, originalFileExt, fileSize);
                 
-                uniqueFileName = Path.GetRandomFileName();
-                uniqueFilePath = Path.Combine(path, uniqueFileName);
+                var uniqueFileName = Path.GetRandomFileName();
+                var uniqueFilePath = Path.Combine(path, uniqueFileName);
                 
                 if(!vaildFileSignature(originalFileExt, file)){
                     _logger.LogInformation("File ext signature failed");
@@ -163,6 +163,7 @@ namespace File.Controllers
                     await file.FormFile.CopyToAsync(fileStream);
                     _logger.LogInformation("OK");    
                 }
+                _repo.UploadFile(new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userID));
                 return Ok(new {fileSize = file.FormFile.Length});
             }
             else
@@ -170,6 +171,15 @@ namespace File.Controllers
                 return BadRequest();
             }
         
+        }
+
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<FileModel>>> GetFiles()
+        {
+            var files = _repo.GetFiles();
+
+            return Ok(files);
         }
 
     }
