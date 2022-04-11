@@ -16,7 +16,7 @@ namespace File.Utilities
     {
          public static async Task<byte[]> ProcessStreamedFile(
             MultipartSection section, ContentDispositionHeaderValue contentDisposition, 
-            ModelStateDictionary modelState, string[] permittedExtensions, long sizeLimit)
+            ModelStateDictionary modelState, long sizeLimit)
         {
             try
             {
@@ -24,6 +24,8 @@ namespace File.Utilities
                 {
                     await section.Body.CopyToAsync(memoryStream);
                     var ext = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
+                    
+                    // Console.WriteLine("fileHelper {}", memoryStream.Length);
                     if (memoryStream.Length == 0)
                     {
                         modelState.AddModelError("File", "The file is empty.");
@@ -34,24 +36,26 @@ namespace File.Utilities
                         modelState.AddModelError("File",
                         $"The file exceeds {megabyteSizeLimit:N1} MB.");
                     }
-                    else if (!FileFormatValidator.IsValidFileExtensionAndSignature( 
-                        ext, memoryStream, 
-                        permittedExtensions))
-                    {
+                    else if (!FileFormatValidator.ValidFileExt(ext)){
                         modelState.AddModelError("File",
-                            "The file type isn't permitted or the file's " +
-                            "signature doesn't match the file's extension.");
+                            "The file type isn't permitted");
                     }
+                    // else if(!FileFormatValidator.VaildFileSignature(ext, memoryStream))
+                    // {
+                    //     modelState.AddModelError("File",
+                    //         "The file's " +
+                    //         "signature doesn't match the file's extension. Ext " + $"{ext}");
+                    // }
                     else
                     {
                         return memoryStream.ToArray();
                     }
                 }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 modelState.AddModelError("File",
-                    "The upload failed. Error: {ex.HResult}");
+                    "The upload failed. Error:" + $"{ex.HResult}");
             }
 
             return Array.Empty<byte>();

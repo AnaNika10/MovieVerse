@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using File.Models;
+using Microsoft.Extensions.Logging;
 
 
 namespace File.Utilities{
     
     public static class FileFormatValidator{
 
-        private static string[] permittedFileExtensions = {".jpg", ".jpeg", ".gif", ".png"};
+        private static string[] permittedFileExtensions = {".jpg", ".jpeg", ".gif", ".png", ".mkv", ".mp4"};
         private static readonly Dictionary<string, List<byte[]>> _fileSignature = 
                                             new Dictionary<string, List<byte[]>>
                                             {
@@ -41,30 +42,32 @@ namespace File.Utilities{
                                                 },
                                                 { ".mkv", new List<byte[]>
                                                     {
-                                                        new byte[] { 0x1A, 0x45, 0xDF, 0xA3, 
-                                                                     0x93, 0x42, 0x82, 0x88 }
+                                                        new byte[] { 0x1A, 0x45, 0xDF, 0xA3},
+                                                    }
+                                                },
+                                                { ".mp4", new List<byte[]>
+                                                    {
+                                                        new byte[] { 0x66, 0x74, 0x79, 0x70, 
+                                                                     0x69, 0x73, 0x6F, 0x6D}
                                                     }
                                                 },
                                                 
+                                                
                                             };
 
-        public static bool VaildFileSignature(string ext, FileModel file){
-            using (var reader = new BinaryReader(file.FormFile.OpenReadStream()))
-            {
-                var signatures = _fileSignature[ext];
-                var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
-                return signatures.Any(signature => 
-                        headerBytes.Take(signature.Length).SequenceEqual(signature));
-            }
-
-        }
-        public static bool VaildFileSignatureVideo(string ext, Stream file){
+        public static bool VaildFileSignature(string ext, Stream file){
             using (var reader = new BinaryReader(file))
             {
                 var signatures = _fileSignature[ext];
                 var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
+                Console.WriteLine("signatures max len: {0:N}", signatures.Max(m => m.Length));
+                Console.WriteLine("File length: {0:N}", file.Length) ;
+                Console.WriteLine("header bytes {0:N}", headerBytes.Length);
+                var temp = Convert.ToHexString(headerBytes);
+                Console.WriteLine(temp);
+                Console.WriteLine(headerBytes.GetLength(0));
                 return signatures.Any(signature => 
-                        headerBytes.Take(signature.Length).SequenceEqual(signature));
+                    headerBytes.Take(signature.Length).SequenceEqual(signature));
             }
 
         }
@@ -75,14 +78,6 @@ namespace File.Utilities{
                 return false;
             }
             return true;
-        }
-        public static bool IsValidFileExtensionAndSignature(string ext, Stream stream, string[] permittedExtensions)
-        {
-            if(permittedExtensions.Contains<string>(ext) && VaildFileSignatureVideo(ext, stream))
-            {
-                return true;
-            }
-            return false;
         }
 
     }

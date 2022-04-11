@@ -28,8 +28,9 @@ namespace File.Controllers
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
         public IConfiguration _config { get; }
+        private string _path;
         private static readonly FormOptions _defaultFormOptions = new FormOptions();
-        private readonly string[] _permittedExtensions = { ".mkv" };
+        
         public FileController(IHostEnvironment env, ILogger<FileController> logger, 
                                 IConfiguration configuration, IFileRepository repo)
         {
@@ -37,6 +38,14 @@ namespace File.Controllers
             _logger = logger;
             _config = configuration;
             _repo = repo;
+            // Path.Combine should work both on Windows and Unix based OS
+            _path = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
+            if(!Directory.Exists(_path))
+            {
+                Directory.CreateDirectory(_path);
+                // TODO: test on Windows: ls -l and see if x permissions are missing for every user
+                FileAccessHandler.RemoveExecutePermissions(_path);
+            }
         }
 
         
@@ -53,14 +62,6 @@ namespace File.Controllers
         {
             if(file.FormFile.Length > 0)
             {
-                // Path.Combine should work both on Windows and Unix based OS
-                string path = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
-                if(!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                    // TODO: test on Windows: ls -l and see if x permissions are missing for every user
-                    FileAccessHandler.RemoveExecutePermissions(path);
-                }
                 var originalFileName = Path.GetFileName(file.FormFile.FileName);
                 originalFileName = WebUtility.HtmlEncode(originalFileName);
                 var originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
@@ -72,9 +73,9 @@ namespace File.Controllers
                 // _logger.LogInformation("{} {} {}", originalFileName, originalFileExt, fileSize);
                 
                 var uniqueFileName = Path.GetRandomFileName();
-                var uniqueFilePath = Path.Combine(path, uniqueFileName);
+                var uniqueFilePath = Path.Combine(_path, uniqueFileName);
                 
-                if(!FileFormatValidator.VaildFileSignature(originalFileExt, file)){
+                if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.FormFile.OpenReadStream())){
                     _logger.LogInformation("File ext signature failed");
                     return StatusCode(415, new {message = "File extension signature check failed"});
                 }
@@ -119,10 +120,7 @@ namespace File.Controllers
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
 
             var reader = new MultipartReader(boundary, HttpContext.Request.Body);
-
             var section = await reader.ReadNextSectionAsync();
-
-            var _targetFilePath = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
             var _fileSizeLimit = _config.GetValue<long>("FileSizeLimit");
 
             while (section != null)
@@ -159,10 +157,8 @@ namespace File.Controllers
                         // for download or for use by other systems. 
                         // For more information, see the topic that accompanies 
                         // this sample.
-
                         var streamedFileContent = await FileHelpers.ProcessStreamedFile(
-                            section, contentDisposition, ModelState, 
-                            _permittedExtensions, _fileSizeLimit);
+                            section, contentDisposition, ModelState,  _fileSizeLimit);
 
                         if (!ModelState.IsValid)
                         {
@@ -170,7 +166,7 @@ namespace File.Controllers
                         }
 
                         using (var targetStream = System.IO.File.Create(
-                            Path.Combine(_targetFilePath, trustedFileNameForFileStorage)))
+                            Path.Combine(_path, trustedFileNameForFileStorage)))
                         {
                             await targetStream.WriteAsync(streamedFileContent);
                         }
