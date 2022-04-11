@@ -12,7 +12,11 @@ using Microsoft.Extensions.Hosting;
 using System.Net;
 using File.Repositories.Interfaces;
 using File.DTO;
-using File.Utillities;
+using File.Utilities;
+using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
+
 namespace File.Controllers
 {
     [ApiController]
@@ -24,6 +28,8 @@ namespace File.Controllers
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
         public IConfiguration _config { get; }
+        private static readonly FormOptions _defaultFormOptions = new FormOptions();
+        private readonly string[] _permittedExtensions = { ".mkv" };
         public FileController(IHostEnvironment env, ILogger<FileController> logger, 
                                 IConfiguration configuration, IFileRepository repo)
         {
@@ -97,14 +103,13 @@ namespace File.Controllers
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [DisableFormValueModelBinding]
-        [ValidateAntiForgeryToken]
+        // [ValidateAntiForgeryToken]
         public async Task<IActionResult> PostVideo(string userId)
         {
             if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
             {
                 ModelState.AddModelError("File", 
-                    $"The request couldn't be processed (Error 1).");
-                // Log error
+                    $"The request couldn't be processed.");
 
                 return BadRequest(ModelState);
             }
@@ -112,8 +117,13 @@ namespace File.Controllers
             var boundary = MultipartRequestHelper.GetBoundary(
                 MediaTypeHeaderValue.Parse(Request.ContentType),
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
+
             var reader = new MultipartReader(boundary, HttpContext.Request.Body);
+
             var section = await reader.ReadNextSectionAsync();
+
+            var _targetFilePath = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
+            var _fileSizeLimit = _config.GetValue<long>("FileSizeLimit");
 
             while (section != null)
             {
@@ -131,15 +141,12 @@ namespace File.Controllers
                         .HasFileContentDisposition(contentDisposition))
                     {
                         ModelState.AddModelError("File", 
-                            $"The request couldn't be processed (Error 2).");
-                        // Log error
-
+                            $"The request couldn't be processed.");
                         return BadRequest(ModelState);
                     }
                     else
                     {
-                        // Don't trust the file name sent by the client. To display
-                        // the file name, HTML-encode the value.
+                        
                         var trustedFileNameForDisplay = WebUtility.HtmlEncode(
                                 contentDisposition.FileName.Value);
                         var trustedFileNameForFileStorage = Path.GetRandomFileName();
@@ -166,22 +173,13 @@ namespace File.Controllers
                             Path.Combine(_targetFilePath, trustedFileNameForFileStorage)))
                         {
                             await targetStream.WriteAsync(streamedFileContent);
-
-                            _logger.LogInformation(
-                                "Uploaded file '{TrustedFileNameForDisplay}' saved to " +
-                                "'{TargetFilePath}' as {TrustedFileNameForFileStorage}", 
-                                trustedFileNameForDisplay, _targetFilePath, 
-                                trustedFileNameForFileStorage);
                         }
                     }
                 }
-
-                // Drain any remaining section body that hasn't been consumed and
-                // read the headers for the next section.
                 section = await reader.ReadNextSectionAsync();
             }
 
-            return Created(nameof(StreamingController), null);
+            return Created(nameof(FileController), null);
         }
 
         
