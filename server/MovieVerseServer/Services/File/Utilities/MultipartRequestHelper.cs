@@ -11,7 +11,6 @@ namespace File.Utilities
         public static string GetBoundary(MediaTypeHeaderValue contentType, int lengthLimit)
         {
             var boundary = HeaderUtilities.RemoveQuotes(contentType.Boundary).Value;
-
             if (string.IsNullOrWhiteSpace(boundary))
             {
                 throw new InvalidDataException("Missing content-type boundary.");

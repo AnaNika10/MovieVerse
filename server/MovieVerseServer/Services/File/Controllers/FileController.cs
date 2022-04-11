@@ -98,7 +98,7 @@ namespace File.Controllers
 
         [Route("[action]")]
         [HttpPost]
-        // [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
@@ -118,11 +118,14 @@ namespace File.Controllers
             var boundary = MultipartRequestHelper.GetBoundary(
                 MediaTypeHeaderValue.Parse(Request.ContentType),
                 _defaultFormOptions.MultipartBoundaryLengthLimit);
-
             var reader = new MultipartReader(boundary, HttpContext.Request.Body);
             var section = await reader.ReadNextSectionAsync();
+            
             var _fileSizeLimit = _config.GetValue<long>("FileSizeLimit");
-
+            string originalFileName = System.String.Empty;
+            string uniqueFileName = System.String.Empty;
+            string uniqueFilePath = System.String.Empty;
+            string originalFileExt = System.String.Empty;
             while (section != null)
             {
                 var hasContentDispositionHeader = 
@@ -145,10 +148,10 @@ namespace File.Controllers
                     else
                     {
                         
-                        var trustedFileNameForDisplay = WebUtility.HtmlEncode(
-                                contentDisposition.FileName.Value);
-                        var trustedFileNameForFileStorage = Path.GetRandomFileName();
-
+                        originalFileName = WebUtility.HtmlEncode(contentDisposition.FileName.Value);
+                        uniqueFileName = Path.GetRandomFileName();
+                        uniqueFilePath = Path.Combine(_path, uniqueFileName);
+                        originalFileExt = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
                         // **WARNING!**
                         // In the following example, the file is saved without
                         // scanning the file's contents. In most production
@@ -166,7 +169,7 @@ namespace File.Controllers
                         }
 
                         using (var targetStream = System.IO.File.Create(
-                            Path.Combine(_path, trustedFileNameForFileStorage)))
+                            Path.Combine(_path, uniqueFilePath)))
                         {
                             await targetStream.WriteAsync(streamedFileContent);
                         }
@@ -174,7 +177,7 @@ namespace File.Controllers
                 }
                 section = await reader.ReadNextSectionAsync();
             }
-
+            _repo.UploadFile(new FileDTO(originalFileName, originalFileExt, _fileSizeLimit, uniqueFileName, uniqueFilePath, userId));
             return Created(nameof(FileController), null);
         }
 
