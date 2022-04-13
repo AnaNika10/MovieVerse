@@ -161,10 +161,6 @@ namespace File.Controllers
                     else
                     {
                         
-                        // originalFileName = WebUtility.HtmlEncode(contentDisposition.FileName.Value);
-                        // uniqueFileName = Path.GetRandomFileName();
-                        // uniqueFilePath = Path.Combine(_path, uniqueFileName);
-                        // originalFileExt = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
 
                         (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
                         (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
