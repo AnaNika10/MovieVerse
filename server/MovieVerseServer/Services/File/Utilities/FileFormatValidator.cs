@@ -56,18 +56,17 @@ namespace File.Utilities{
                                             };
 
         public static bool VaildFileSignature(string ext, Stream file){
+            
+            file.Position = 0;
+            
             using (var reader = new BinaryReader(file))
             {
                 var signatures = _fileSignature[ext];
                 var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
-                Console.WriteLine("signatures max len: {0:N}", signatures.Max(m => m.Length));
-                Console.WriteLine("File length: {0:N}", file.Length) ;
-                Console.WriteLine("header bytes {0:N}", headerBytes.Length);
-                var temp = Convert.ToHexString(headerBytes);
-                Console.WriteLine(temp);
-                Console.WriteLine(headerBytes.GetLength(0));
+                var temp = Convert.ToHexString(headerBytes.Take(4).ToArray<byte>());
                 return signatures.Any(signature => 
-                    headerBytes.Take(signature.Length).SequenceEqual(signature));
+                headerBytes.Take(signature.Length).SequenceEqual(signature));
+                
             }
 
         }

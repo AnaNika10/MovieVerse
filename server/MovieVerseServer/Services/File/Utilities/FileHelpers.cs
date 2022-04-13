@@ -25,7 +25,6 @@ namespace File.Utilities
                     await section.Body.CopyToAsync(memoryStream);
                     var ext = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
                     
-                    // Console.WriteLine("fileHelper {}", memoryStream.Length);
                     if (memoryStream.Length == 0)
                     {
                         modelState.AddModelError("File", "The file is empty.");
@@ -39,13 +38,15 @@ namespace File.Utilities
                     else if (!FileFormatValidator.ValidFileExt(ext)){
                         modelState.AddModelError("File",
                             "The file type isn't permitted");
+                        
                     }
-                    // else if(!FileFormatValidator.VaildFileSignature(ext, memoryStream))
-                    // {
-                    //     modelState.AddModelError("File",
-                    //         "The file's " +
-                    //         "signature doesn't match the file's extension. Ext " + $"{ext}");
-                    // }
+                    else if(!FileFormatValidator.VaildFileSignature(ext, memoryStream))
+                    {
+
+                        modelState.AddModelError("File",
+                            "The file's " +
+                            "signature doesn't match the file's extension. Ext " + $"{ext}");
+                    }
                     else
                     {
                         return memoryStream.ToArray();
