@@ -21,10 +21,10 @@ namespace Feed.Controllers
         {
             await _store.CreateComment(comment);
 
-            return CreatedAtRoute("GetProduct", new { id = comment.Id }, comment);
+            return CreatedAtRoute("GetComment", new { id = comment.Id }, comment);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        [HttpGet("{id:length(24)}", Name = "GetComment")]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
         public async Task<ActionResult<Comment>> GetCommentById(string id)
         {
@@ -43,7 +43,7 @@ namespace Feed.Controllers
             return Ok(await _store.UpdateComment(comment));
         }
 
-        [HttpDelete("{id:length(24)}", Name = "DeleteProduct")]
+        [HttpDelete("{id:length(24)}", Name = "DeleteComment")]
         [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteComment(string id)
         {

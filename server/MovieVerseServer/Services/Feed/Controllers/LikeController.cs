@@ -21,10 +21,10 @@ namespace Feed.Controllers
         {
             await _store.CreateLike(like);
 
-            return CreatedAtRoute("GetProduct", new { id = like.Id }, like);
+            return CreatedAtRoute("GetLike", new { id = like.Id }, like);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        [HttpGet("{id:length(24)}", Name = "GetLike")]
         [ProducesResponseType(typeof(Like), StatusCodes.Status200OK)]
         public async Task<ActionResult<Like>> GetLikeById(string id)
         {
@@ -43,7 +43,7 @@ namespace Feed.Controllers
             return Ok(await _store.UpdateLike(like));
         }
 
-        [HttpDelete("{id:length(24)}", Name = "DeleteProduct")]
+        [HttpDelete("{id:length(24)}", Name = "DeleteLike")]
         [ProducesResponseType(typeof(Like), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeleteLike(string id)
         {
