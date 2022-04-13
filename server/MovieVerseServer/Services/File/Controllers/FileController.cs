@@ -31,6 +31,8 @@ namespace File.Controllers
         private string _path;
         private static readonly FormOptions _defaultFormOptions = new FormOptions();
         
+        
+        
         public FileController(IHostEnvironment env, ILogger<FileController> logger, 
                                 IConfiguration configuration, IFileRepository repo)
         {
@@ -48,7 +50,20 @@ namespace File.Controllers
             }
         }
 
+        private (string, string) GetUniqueFileNameAndPath()
+        {
+            var uniqueFileName = Path.GetRandomFileName();
+            var uniqueFilePath = Path.Combine(_path, uniqueFileName);
+            return (uniqueFileName, uniqueFilePath);
+        }
         
+        private (string, string) GetOriginalFileNameAndExtension(string path)
+        {
+            var originalFileName = Path.GetFileName(path);
+            originalFileName = WebUtility.HtmlEncode(originalFileName);
+            var originalFileExt = Path.GetExtension(path).ToLowerInvariant();
+            return (originalFileName, originalFileExt);
+        }
 
         [Route("[action]")]
         [HttpPost]
@@ -62,18 +77,15 @@ namespace File.Controllers
         {
             if(file.FormFile.Length > 0)
             {
-                var originalFileName = Path.GetFileName(file.FormFile.FileName);
-                originalFileName = WebUtility.HtmlEncode(originalFileName);
-                var originalFileExt = Path.GetExtension(file.FormFile.FileName).ToLowerInvariant();
+                
+                var fileSize = file.FormFile.Length;
+                var (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(file.FormFile.FileName); 
+                var (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
                 if(!FileFormatValidator.ValidFileExt(originalFileExt))
                 {
                     return StatusCode(415, new {message = "Unsupported file format"});
                 }
-                var fileSize = file.FormFile.Length;
-                // _logger.LogInformation("{} {} {}", originalFileName, originalFileExt, fileSize);
                 
-                var uniqueFileName = Path.GetRandomFileName();
-                var uniqueFilePath = Path.Combine(_path, uniqueFileName);
                 
                 if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.FormFile.OpenReadStream())){
                     _logger.LogInformation("File ext signature failed");
@@ -126,6 +138,7 @@ namespace File.Controllers
             string uniqueFileName = System.String.Empty;
             string uniqueFilePath = System.String.Empty;
             string originalFileExt = System.String.Empty;
+
             while (section != null)
             {
                 var hasContentDispositionHeader = 
@@ -148,10 +161,13 @@ namespace File.Controllers
                     else
                     {
                         
-                        originalFileName = WebUtility.HtmlEncode(contentDisposition.FileName.Value);
-                        uniqueFileName = Path.GetRandomFileName();
-                        uniqueFilePath = Path.Combine(_path, uniqueFileName);
-                        originalFileExt = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
+                        // originalFileName = WebUtility.HtmlEncode(contentDisposition.FileName.Value);
+                        // uniqueFileName = Path.GetRandomFileName();
+                        // uniqueFilePath = Path.Combine(_path, uniqueFileName);
+                        // originalFileExt = Path.GetExtension(contentDisposition.FileName.Value).ToLowerInvariant();
+
+                        (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
+                        (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
                         // **WARNING!**
                         // In the following example, the file is saved without
                         // scanning the file's contents. In most production
