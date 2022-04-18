@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  feed1:
+    image: ${DOCKER_REGISTRY-}feed1
+    build:
+      context: .
+      dockerfile: Services/Feed1/Feed1/Dockerfile
