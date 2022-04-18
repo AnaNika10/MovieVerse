@@ -1,8 +1,19 @@
 version: '3.4'
 
 services:
+  feeddb:
+    image: postgres
+
+  pgadmin:
+    image: dpage/pgadmin4
+
+
   feed1:
     image: ${DOCKER_REGISTRY-}feed1
     build:
       context: .
       dockerfile: Services/Feed1/Feed1/Dockerfile
+
+volumes:
+  postgres_data:
+  pgadmin_data:
