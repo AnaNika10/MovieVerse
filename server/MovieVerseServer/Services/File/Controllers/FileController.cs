@@ -67,8 +67,7 @@ namespace File.Controllers
 
         [Route("[action]")]
         [HttpPost]
-        // [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -99,8 +98,8 @@ namespace File.Controllers
                 }
                 var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId); 
                 _repo.UploadFile(uploadedImg);
-                //TODO: change to CreatedAtRoute
-                return Ok(new {uploadedImgId = uploadedImg.Id});
+                
+                return Created("Image ID", new {uploadedImgId = uploadedImg.Id});
             }
             else
             {
