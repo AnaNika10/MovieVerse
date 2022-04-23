@@ -72,7 +72,7 @@ namespace File.Controllers
         [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         
-        public async Task<IActionResult>PostImage([FromForm]FileModel file, string userId)
+        public async Task<IActionResult>PostImage([FromForm]FileModel file, string userId, bool isAvatar=false)
         {
             if(file.FormFile.Length > 0 && file.FormFile.Length < _config.GetValue<long>("FileSizeLimit"))
             {
@@ -90,13 +90,23 @@ namespace File.Controllers
                     _logger.LogInformation("File ext signature failed");
                     return StatusCode(415, new {message = "File extension signature check failed"});
                 }
+                if(isAvatar){
+                    var existingAvatar = await _repo.GetAvatar(userId);
+                    if(existingAvatar!=null){
+                       System.IO.File.Delete(existingAvatar.uniqueFilePath);
+                       bool isDeleteSuccessful = await _repo.DeleteAvatar(existingAvatar.Id);
+                        if(!isDeleteSuccessful){
+                            return StatusCode(500);
+                        }
+                    }
+                }
                 using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
                 {
                     
                     await file.FormFile.CopyToAsync(fileStream);
                     _logger.LogInformation("OK");    
                 }
-                var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId); 
+                var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId, isAvatar); 
                 _repo.UploadFile(uploadedImg);
                 
                 return Created("Image ID", new {uploadedImgId = uploadedImg.Id});

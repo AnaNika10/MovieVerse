@@ -10,5 +10,7 @@ namespace File.Repositories.Interfaces
     {
         // Task<IEnumerable<FileDTO>> GetFiles();
         void UploadFile(FileDTO file);
+        public Task<FileDTO> GetAvatar(string userId);
+        public Task<bool> DeleteAvatar(string fileId);
     }
 }

@@ -27,5 +27,17 @@ namespace File.Repositories
         {
             await _context.Files.InsertOneAsync(file);
         }
+
+        public async Task<bool> DeleteAvatar(string fileId)
+        {
+            var deleteRes = await _context.Files.DeleteOneAsync(p => p.Id == fileId);
+            return deleteRes.IsAcknowledged && deleteRes.DeletedCount > 0;
+        }
+
+        public async Task<FileDTO> GetAvatar(string userId)
+        {
+            return await _context.Files.Find<FileDTO>(p => p.userID == userId).FirstOrDefaultAsync();
+        }
+
     }
 }

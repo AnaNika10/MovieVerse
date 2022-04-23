@@ -16,8 +16,10 @@ namespace File.DTO
         public string uniqueFileName {get; set;}
         public string uniqueFilePath {get; set;}
         public string userID {get; set;}
+        public bool isAvatar;
 
-        public FileDTO(string originalFileName, string originalFileExt, long fileSize, string uniqueFileName, string uniqueFilePath, string userID)
+        public FileDTO(string originalFileName, string originalFileExt, long fileSize, 
+                       string uniqueFileName, string uniqueFilePath, string userID, bool isAvatar=false)
         {
             this.originalFileName = originalFileName;
             this.originalFileExt = originalFileExt;
@@ -25,6 +27,7 @@ namespace File.DTO
             this.uniqueFileName = uniqueFileName;
             this.uniqueFilePath = uniqueFilePath;
             this.userID = userID;
+            this.isAvatar = isAvatar;
         }
     }
 }
