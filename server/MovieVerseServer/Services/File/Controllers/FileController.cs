@@ -97,9 +97,10 @@ namespace File.Controllers
                     await file.FormFile.CopyToAsync(fileStream);
                     _logger.LogInformation("OK");    
                 }
-                _repo.UploadFile(new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId));
+                var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId); 
+                _repo.UploadFile(uploadedImg);
                 //TODO: change to CreatedAtRoute
-                return Ok(new {fileSize = file.FormFile.Length});
+                return Ok(new {uploadedImgId = uploadedImg.Id});
             }
             else
             {
@@ -189,8 +190,9 @@ namespace File.Controllers
                 }
                 section = await reader.ReadNextSectionAsync();
             }
-            _repo.UploadFile(new FileDTO(originalFileName, originalFileExt, _fileSizeLimit, uniqueFileName, uniqueFilePath, userId));
-            return Created(nameof(FileController), null);
+            var uploadedVideo = new FileDTO(originalFileName, originalFileExt, _fileSizeLimit, uniqueFileName, uniqueFilePath, userId);
+            _repo.UploadFile(uploadedVideo);
+            return Created("Video ID", new {uploadedVideoId = uploadedVideo.Id});
         }
 
         
