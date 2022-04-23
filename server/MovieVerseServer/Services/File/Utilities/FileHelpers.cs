@@ -35,12 +35,12 @@ namespace File.Utilities
                         modelState.AddModelError("File",
                         $"The file exceeds {megabyteSizeLimit:N1} MB.");
                     }
-                    else if (!FileFormatValidator.ValidFileExt(ext)){
+                    else if (!FileFormatValidator.ValidFileExt(ext, true)){
                         modelState.AddModelError("File",
                             "The file type isn't permitted");
                         
                     }
-                    else if(!FileFormatValidator.VaildFileSignature(ext, memoryStream))
+                    else if(!FileFormatValidator.VaildFileSignature(ext, memoryStream, true))
                     {
 
                         modelState.AddModelError("File",
@@ -56,7 +56,7 @@ namespace File.Utilities
             catch(Exception ex)
             {
                 modelState.AddModelError("File",
-                    "The upload failed. Error:" + $"{ex.HResult}");
+                    "The upload failed. Error:" + $"{ex.Message}");
             }
 
             return Array.Empty<byte>();

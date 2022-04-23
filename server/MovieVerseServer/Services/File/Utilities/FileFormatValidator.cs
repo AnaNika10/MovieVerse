@@ -11,8 +11,9 @@ namespace File.Utilities{
     
     public static class FileFormatValidator{
 
-        private static string[] permittedFileExtensions = {".jpg", ".jpeg", ".gif", ".png", ".mkv", ".mp4"};
-        private static readonly Dictionary<string, Tuple<List<byte[]>, int>> _fileSignature = 
+        private static string[] permittedImgExtensions = {".jpg", ".jpeg", ".gif", ".png"};
+        private static string[] permittedVideoExtensions = {".mkv", ".mp4"};
+        private static readonly Dictionary<string, Tuple<List<byte[]>, int>> _imgFileSignature = 
                                             new Dictionary<string, Tuple<List<byte[]>, int>>
                                             {
                                                 { ".jpeg", new Tuple<List<byte[]>, int>(
@@ -48,6 +49,11 @@ namespace File.Utilities{
                                                     },
                                                     0)
                                                 },
+                                            };
+
+        private static readonly Dictionary<string, Tuple<List<byte[]>, int>> _videoFileSignature = 
+                                            new Dictionary<string, Tuple<List<byte[]>, int>>
+                                            {
                                                 { ".mkv", new Tuple<List<byte[]>, int>(
                                                     new List<byte[]>
                                                     {
@@ -62,18 +68,23 @@ namespace File.Utilities{
                                                                      0x69, 0x73, 0x6F, 0x6D}
                                                     },
                                                     4)
-                                                },
-                                                
-                                                
+                                                },  
                                             };
-
-        public static bool VaildFileSignature(string ext, Stream file){
+        public static bool VaildFileSignature(string ext, Stream file, bool video=false){
             
             file.Position = 0;
             
             using (var reader = new BinaryReader(file))
             {
-                var (signatures, offset) = _fileSignature[ext];
+                List<byte[]> signatures;
+                int offset;
+
+                if(video){
+                    (signatures, offset) = _videoFileSignature[ext];    
+                }
+                else{
+                    (signatures, offset) = _imgFileSignature[ext];
+                }
                 reader.ReadBytes(offset);
                 var headerBytes = reader.ReadBytes(signatures.Max(m => m.Length));
                 var temp = Convert.ToHexString(headerBytes.Take(4).ToArray<byte>());
@@ -83,10 +94,16 @@ namespace File.Utilities{
             }
 
         }
-        public static bool ValidFileExt(string ext){
+        public static bool ValidFileExt(string ext, bool isVideo=false){
 
-            if (string.IsNullOrEmpty(ext) || !permittedFileExtensions.Contains(ext))
+            if (string.IsNullOrEmpty(ext))
             {
+                return false;
+            }
+            if (isVideo && !permittedVideoExtensions.Contains(ext)){
+                return false;
+            }
+            if (!isVideo && !permittedImgExtensions.Contains(ext)){
                 return false;
             }
             return true;
