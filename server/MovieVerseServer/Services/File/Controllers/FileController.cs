@@ -75,7 +75,7 @@ namespace File.Controllers
         
         public async Task<IActionResult>PostImage([FromForm]FileModel file, string userId)
         {
-            if(file.FormFile.Length > 0)
+            if(file.FormFile.Length > 0 && file.FormFile.Length < _config.GetValue<long>("FileSizeLimit"))
             {
                 
                 var fileSize = file.FormFile.Length;
