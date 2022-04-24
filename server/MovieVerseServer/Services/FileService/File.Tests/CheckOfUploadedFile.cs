@@ -46,6 +46,29 @@ namespace File.Tests
             Assert.Equal(HttpUtility.HtmlDecode(htmlEncodedName), originalFileName);
 
         }
+
+        [Fact]
+        public void SafeFileNameAndPath_AreGenerated()
+        {
+            // given DI arguments for construction of FileController and file name
+            var config = new ConfigurationBuilder()
+                                    .AddInMemoryCollection(_confOptions)
+                                    .Build();
+            var env = new Mock<IHostEnvironment>();
+            var logger = new Mock<ILogger<FileController>>();
+            var repo = new Mock<IFileRepository>();
+            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
+            var originalFileName = "foo.mp4";
+        
+            // when preprocessing file
+            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+            var (newFileName, newFilePath) = controller.GetUniqueFileNameAndPath();
+
+            // then random file name and unique file path are generated
+            Assert.False(newFileName == originalFileName);
+            Assert.True(Path.Combine(_ContentRootPath, _uploadPath, newFileName) == newFilePath);
+
+        }
         
     }
 }
