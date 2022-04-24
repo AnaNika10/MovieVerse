@@ -27,6 +27,30 @@ namespace File.Tests
                         };    
         private static readonly string _ContentRootPath = 
                                 "/home/marija/Desktop/MovieVerse/server/MovieVerseServer/Services/FileService/File";
+        
+        [Fact]
+        public void CreationOfFileController_CreatesUploadDir()
+        {
+            // given DI arguments for construction of FileController
+            var config = new ConfigurationBuilder()
+                                    .AddInMemoryCollection(_confOptions)
+                                    .Build();
+            var env = new Mock<IHostEnvironment>();
+            var logger = new Mock<ILogger<FileController>>();
+            var repo = new Mock<IFileRepository>();
+            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
+        
+            // when FileController is created
+            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+
+            // then upload dir is created 
+            var dirPath = Path.Combine(_ContentRootPath, _uploadPath);
+            DirectoryInfo dInfo = new DirectoryInfo(dirPath);
+
+            Assert.True(dInfo.Exists);
+
+        }
+        
         [Fact]
         public void CreationOfMultipleFileControllers_ResultsInUniqueUploadDirectory()
         {
@@ -76,5 +100,7 @@ namespace File.Tests
             
             Assert.Equal(permissions, fileInfo.FileAccessPermissions);
         }
+
+        
     }
 }
