@@ -10,8 +10,11 @@ using File.Repositories.Interfaces;
 using File.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using System.Security.Principal;
+using System.Security.AccessControl;
 using Moq;
 using Xunit;
+using Mono.Unix;
 
 namespace File.Tests
 {
@@ -46,8 +49,32 @@ namespace File.Tests
                      .Where(dir => dir.Contains(_uploadPath))
                      .ToArray<string>()
                      .Length;
-            Console.WriteLine(numOfUploadDirs);
             Assert.Equal(numOfUploadDirs, 1);
+        }
+
+        [Fact]
+        public void CreatedUploadDir_HasNoExecutePermissions_Unix()
+        {
+            //given DI arguments for construction of FileCOntroller
+            var config = new ConfigurationBuilder()
+                                    .AddInMemoryCollection(_confOptions)
+                                    .Build();
+            var env = new Mock<IHostEnvironment>();
+            var logger = new Mock<ILogger<FileController>>();
+            var repo = new Mock<IFileRepository>();
+            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
+            
+            // when upload dir is created
+            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+            
+
+            //then it has no execute permissions
+            var fileInfo = new Mono.Unix.UnixFileInfo(Path.Combine(_ContentRootPath, _uploadPath));
+            var permissions = FileAccessPermissions.UserRead | FileAccessPermissions.UserWrite | FileAccessPermissions.UserExecute
+                | FileAccessPermissions.GroupRead | FileAccessPermissions.GroupWrite
+                | FileAccessPermissions.OtherRead | FileAccessPermissions.OtherWrite;
+            
+            Assert.Equal(permissions, fileInfo.FileAccessPermissions);
         }
     }
 }

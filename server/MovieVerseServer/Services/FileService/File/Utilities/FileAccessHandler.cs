@@ -15,12 +15,12 @@ namespace File.Utilities{
         private static void RemoveExecutePermissionsWindows(string dirPath)
         {
             DirectoryInfo dInfo = new DirectoryInfo(dirPath);
-                DirectorySecurity dSecurity = dInfo.GetAccessControl();
+            DirectorySecurity dSecurity = dInfo.GetAccessControl();
 
-                dSecurity.RemoveAccessRule(new FileSystemAccessRule("Everyone", 
-                                                                    FileSystemRights.ExecuteFile, 
-                                                                    AccessControlType.Allow));
-                dInfo.SetAccessControl(dSecurity);   
+            dSecurity.RemoveAccessRule(new FileSystemAccessRule("Everyone", 
+                                                                FileSystemRights.ExecuteFile, 
+                                                                AccessControlType.Allow));
+            dInfo.SetAccessControl(dSecurity);   
         }
         private static void RemoveExecutePermissionsUnix(string dirPath)
         {
