@@ -50,14 +50,14 @@ namespace File.Controllers
             }
         }
 
-        private (string, string) GetUniqueFileNameAndPath()
+        public (string, string) GetUniqueFileNameAndPath()
         {
             var uniqueFileName = Path.GetRandomFileName();
             var uniqueFilePath = Path.Combine(_path, uniqueFileName);
             return (uniqueFileName, uniqueFilePath);
         }
         
-        private (string, string) GetOriginalFileNameAndExtension(string path)
+        public (string, string) GetOriginalFileNameAndExtension(string path)
         {
             var originalFileName = Path.GetFileName(path);
             originalFileName = WebUtility.HtmlEncode(originalFileName);
