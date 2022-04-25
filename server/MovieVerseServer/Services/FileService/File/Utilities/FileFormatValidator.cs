@@ -13,7 +13,7 @@ namespace File.Utilities{
 
         private static string[] permittedImgExtensions = {".jpg", ".jpeg", ".gif", ".png"};
         private static string[] permittedVideoExtensions = {".mkv", ".mp4"};
-        private static readonly Dictionary<string, Tuple<List<byte[]>, int>> _imgFileSignature = 
+        public static readonly Dictionary<string, Tuple<List<byte[]>, int>> _imgFileSignature = 
                                             new Dictionary<string, Tuple<List<byte[]>, int>>
                                             {
                                                 { ".jpeg", new Tuple<List<byte[]>, int>(
@@ -51,7 +51,7 @@ namespace File.Utilities{
                                                 },
                                             };
 
-        private static readonly Dictionary<string, Tuple<List<byte[]>, int>> _videoFileSignature = 
+        public static readonly Dictionary<string, Tuple<List<byte[]>, int>> _videoFileSignature = 
                                             new Dictionary<string, Tuple<List<byte[]>, int>>
                                             {
                                                 { ".mkv", new Tuple<List<byte[]>, int>(
