@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using File.Controllers;
 using File.Models;
+using File.Utilities;
 using File.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using Xunit;
-using FluentAssertions;
 
 namespace File.Tests
 {
@@ -57,6 +57,23 @@ namespace File.Tests
             Assert.Equal(statusCodeResult.StatusCode, StatusCodes.Status400BadRequest);
         }
 
+
+        [Theory]
+        [InlineData(".pdf")]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData(".exe")]
+        [InlineData(".doc")]
+        public async void NotSupportedImageExtension(string ext)
+        {
+            // given extension of uploaded file
+        
+            // when checking not supported extension
+            var extValidation = FileFormatValidator.ValidFileExt(ext);
+            
+            // then extension check returns false
+            Assert.False(extValidation);
+        }
                 
     }
 }
