@@ -110,6 +110,20 @@ namespace File.Tests
             // then signature check returns true
             Assert.True(signatureValidation);
         }
+
+        [Theory]
+        [InlineData(".mkv")]
+        public async void ValidVideoFileSignature(string ext)
+        {
+            // given extension and signature of uploaded file
+        
+            // when checking supported extension and file signature
+            var fileStream = new MemoryStream(FileFormatValidator._videoFileSignature[ext].Item1[0]);
+            var signatureValidation = FileFormatValidator.VaildFileSignature(ext, fileStream, true);
+            
+            // then signature check returns true
+            Assert.True(signatureValidation);
+        }
                 
     }
 }
