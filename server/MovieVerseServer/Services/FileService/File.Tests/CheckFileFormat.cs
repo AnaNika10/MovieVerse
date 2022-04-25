@@ -56,31 +56,6 @@ namespace File.Tests
             Assert.NotNull(res);
             Assert.Equal(statusCodeResult.StatusCode, StatusCodes.Status400BadRequest);
         }
-        [Theory]
-        [InlineData(0)]
-        [InlineData(30000001)]
-        public async void InvalidFileSize_IVideo(long fSize)
-        {
-            // given DI arguments for construction of FileController and file name
-            var config = new ConfigurationBuilder()
-                                    .AddInMemoryCollection(_confOptions)
-                                    .Build();
-            var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
-            var repo = new Mock<IFileRepository>();
-            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
-            var originalFileName = "foo.mp4";
-        
-            // when posting image of invalid size
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
-            var res =  await controller.PostVideo("alice");
-            var statusCodeResult = (IStatusCodeActionResult)res;
-            
-            // then request fails
-            Assert.NotNull(res);
-            Assert.Equal(statusCodeResult.StatusCode, StatusCodes.Status400BadRequest);
-        }
-
 
         [Theory]
         [InlineData(".pdf")]
@@ -117,6 +92,23 @@ namespace File.Tests
             
             // then extension check returns false
             Assert.False(extValidation);
+        }
+
+        [Theory]
+        [InlineData(".jpg")]
+        [InlineData(".jpeg")]
+        [InlineData(".gif")]
+        [InlineData(".png")]
+        public async void ValidImgFileSignature(string ext)
+        {
+            // given extension and signature of uploaded file
+        
+            // when checking supported extension and file signature
+            var fileStream = new MemoryStream(FileFormatValidator._imgFileSignature[ext].Item1[0]);
+            var signatureValidation = FileFormatValidator.VaildFileSignature(ext, fileStream);
+            
+            // then signature check returns true
+            Assert.True(signatureValidation);
         }
                 
     }
