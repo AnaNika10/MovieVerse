@@ -1,10 +1,10 @@
-﻿using System;
-using IdentityServer.Data;
+﻿using IdentityServer.Data;
 using IdentityServer.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace IdentityServer.Extensions
 {
@@ -33,6 +33,13 @@ namespace IdentityServer.Extensions
             })
                 .AddEntityFrameworkStores<IdentityContext>()
                 .AddDefaultTokenProviders();
+
+            return services;
+        }
+
+        public static IServiceCollection ConfigureMiscellaneousServices(this IServiceCollection services)
+        {
+            services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             return services;
         }

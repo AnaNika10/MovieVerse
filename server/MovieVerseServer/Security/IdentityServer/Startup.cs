@@ -5,11 +5,9 @@ using System.Threading.Tasks;
 using IdentityServer.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
 namespace IdentityServer
@@ -30,6 +28,8 @@ namespace IdentityServer
 
             services.ConfigurePersistence(Configuration);
             services.ConfigureIdentity();
+
+            services.ConfigureMiscellaneousServices();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
