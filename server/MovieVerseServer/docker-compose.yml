@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  notificationdb:
+    image: postgres
+
+  pgadmin:
+    image: dpage/pgadmin4
+
+  notification.api:
+    image: ${DOCKER_REGISTRY-}notificationapi
+    build:
+      context: .
+      dockerfile: Services/Notification/Notification.API/Dockerfile
+
+volumes:
+  postgres_data:
+  pgadmin_data:
