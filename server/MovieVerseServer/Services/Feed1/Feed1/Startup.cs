@@ -1,3 +1,8 @@
+using Feed.Entities;
+using Feed1.Data;
+using Feed1.DTOs;
+using Feed1.Entities;
+using Feed1.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +31,17 @@ namespace Feed1
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddScoped<IFeedContext, FeedContext>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IFollowRepository, FollowRepository>();
+            services.AddAutoMapper(configuration =>
+            {
+
+                configuration.CreateMap<PostDTO, Post>().ReverseMap();
+                configuration.CreateMap<FollowDTO, Follow>().ReverseMap();
+
+            });
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -45,7 +61,7 @@ namespace Feed1
 
             app.UseRouting();
 
-            app.UseAuthorization();
+           // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,12 +1,6 @@
 version: '3.4'
 
 services:
-  feed1:
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    ports:
-      - "80"
-
   feeddb:
     container_name: feeddb
     environment:
@@ -29,3 +23,13 @@ services:
       - "5050:80"
     volumes:
       - pgadmin_data:/root/.pgadmin
+
+  feed1:
+    container_name: feed
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "DatabaseSettings:ConnectionString=Server=feeddb;Port=5432;Database=FeedDB;User Id=admin;Password=admin1234;"
+    depends_on:
+      - feeddb
+    ports:
+      - "8002:80"
