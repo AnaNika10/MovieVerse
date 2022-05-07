@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.16" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.16">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,6 +35,8 @@
     <None Remove="Data\EntityTypeConfigurations\" />
     <None Remove="Microsoft.EntityFrameworkCore.Tools" />
     <None Remove="Polly" />
+    <None Remove="DTOs\" />
+    <None Remove="Mapper\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -42,5 +44,7 @@
     <Folder Include="Data\" />
     <Folder Include="Extensions\" />
     <Folder Include="Data\EntityTypeConfigurations\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Mapper\" />
   </ItemGroup>
 </Project>
