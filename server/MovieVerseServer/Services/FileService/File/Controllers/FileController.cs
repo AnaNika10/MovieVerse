@@ -223,5 +223,29 @@ namespace File.Controllers
             return File(content, "image/" + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
         }
 
+        [Route("[action]/{id}")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetVideo(string id)
+        {
+            
+            var fileInfo = await _repo.GetFile(id);
+
+            if (fileInfo == null){
+                return NotFound();
+            }
+            
+            var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
+            var mimeType = "";
+            if(fileInfo.originalFileExt.Substring(1) == "mp4"){
+                mimeType = "mp4";
+            }
+            else if(fileInfo.originalFileExt.Substring(1) == "mkv"){
+                mimeType = "x-matroska";
+            }
+            return File(content, "video/" + mimeType + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
+        }
+
     }
 }
