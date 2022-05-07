@@ -18,10 +18,10 @@ namespace File.Repositories
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        // public async Task<IEnumerable<FileDTO>> GetFiles()
-        // {
-        //     return await _context.Files.Find<FileDTO>(p => true).ToListAsync();
-        // }
+        public async Task<FileDTO> GetFile(string id)
+        {
+            return await _context.Files.Find<FileDTO>(f => f.Id == id).FirstOrDefaultAsync();
+        }
 
         public async void UploadFile(FileDTO file)
         {
