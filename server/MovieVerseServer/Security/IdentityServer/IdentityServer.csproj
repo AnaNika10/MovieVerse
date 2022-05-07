@@ -37,6 +37,7 @@
     <None Remove="Polly" />
     <None Remove="DTOs\" />
     <None Remove="Mapper\" />
+    <None Remove="Services\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -46,5 +47,6 @@
     <Folder Include="Data\EntityTypeConfigurations\" />
     <Folder Include="DTOs\" />
     <Folder Include="Mapper\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 </Project>
