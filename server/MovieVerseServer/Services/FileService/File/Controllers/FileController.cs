@@ -205,14 +205,23 @@ namespace File.Controllers
         }
 
         
-        // [HttpGet]
-        // [ProducesResponseType(StatusCodes.Status200OK)]
-        // public async Task<ActionResult<IEnumerable<FileModel>>> GetFiles()
-        // {
-        //     var files = _repo.GetFiles();
+        [Route("[action]/{id}")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetImage(string id)
+        {
+            
+            var fileInfo = await _repo.GetFile(id);
 
-        //     return Ok(files);
-        // }
+            if (fileInfo == null){
+                return NotFound();
+            }
+            
+            var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
+            
+            return File(content, "image/" + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
+        }
 
     }
 }
