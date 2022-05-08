@@ -3,6 +3,7 @@ using IdentityServer.Controllers.Base;
 using IdentityServer.DTOs;
 using IdentityServer.Entities;
 using IdentityServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -91,6 +92,24 @@ namespace IdentityServer.Controllers
             }
 
             return Ok(await _authService.CreateAuthenticationModel(user));
+        }
+
+        [Authorize]
+        [HttpPost("[action]")]
+        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Logout([FromBody] RefreshTokenModel refreshTokenCredentials)
+        {
+            var user = await _userManager.FindByNameAsync(refreshTokenCredentials.UserName);
+            if (user == null)
+            {
+                _logger.LogWarning($"{nameof(Logout)}: Logout failed. Unknown username {refreshTokenCredentials.UserName}.");
+                return Forbid();
+            }
+
+            await _authService.RemoveRefreshToken(user, refreshTokenCredentials.RefreshToken);
+
+            return Accepted();
         }
     }
 }
