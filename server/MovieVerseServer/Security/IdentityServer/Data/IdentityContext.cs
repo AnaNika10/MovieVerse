@@ -8,6 +8,8 @@ namespace IdentityServer.Data
 {
     public class IdentityContext : IdentityDbContext<User>
     {
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+
         public IdentityContext(DbContextOptions options) : base(options)
         {
         }
@@ -17,6 +19,7 @@ namespace IdentityServer.Data
             base.OnModelCreating(builder);
 
             builder.ApplyConfiguration(new RoleConfiguration());
+            builder.ApplyConfiguration(new UserConfiguration());
 
         }
     }
