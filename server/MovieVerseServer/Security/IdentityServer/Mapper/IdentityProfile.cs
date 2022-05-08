@@ -9,6 +9,7 @@ namespace IdentityServer.Mapper
         public IdentityProfile()
         {
             CreateMap<User, NewUserDto>().ReverseMap();
+            CreateMap<User, UserDetails>().ReverseMap();
         }
     }
 }
