@@ -38,6 +38,7 @@
     <None Remove="DTOs\" />
     <None Remove="Mapper\" />
     <None Remove="Services\" />
+    <None Remove="Controllers\Base\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -48,5 +49,6 @@
     <Folder Include="DTOs\" />
     <Folder Include="Mapper\" />
     <Folder Include="Services\" />
+    <Folder Include="Controllers\Base\" />
   </ItemGroup>
 </Project>
