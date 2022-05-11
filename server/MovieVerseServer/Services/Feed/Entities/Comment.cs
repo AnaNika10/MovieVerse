@@ -1,4 +1,6 @@
-﻿namespace Feed.Entities
+﻿using System;
+
+namespace Feed.Entities
 {
     public class Comment
     {
