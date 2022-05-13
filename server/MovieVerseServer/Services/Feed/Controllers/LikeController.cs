@@ -3,6 +3,7 @@ using Feed.Repository.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Feed.Controllers
@@ -34,6 +35,24 @@ namespace Feed.Controllers
             LikeDTO likeDTO = await _repository.GetById(id);
 
             return likeDTO == null ? NotFound(null) : Ok(likeDTO);
+        }
+
+        [HttpGet("/postLikes/{postId}")]
+        [ProducesResponseType(typeof(IEnumerable<LikeDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<LikeDTO>>> GetPostLikes(int postId)
+        {
+            IEnumerable<LikeDTO> likes = await _repository.GetPostLikes(postId);
+
+            return likes == null ? NotFound(null) : Ok(likes);
+        }
+
+        [HttpGet("/commentLikes/{commentId}")]
+        [ProducesResponseType(typeof(IEnumerable<LikeDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<LikeDTO>>> GetCommentLikes(int commentId)
+        {
+            IEnumerable<LikeDTO> likes = await _repository.GetCommentLikes(commentId);
+
+            return likes == null ? NotFound(null) : Ok(likes);
         }
 
         [HttpPut]

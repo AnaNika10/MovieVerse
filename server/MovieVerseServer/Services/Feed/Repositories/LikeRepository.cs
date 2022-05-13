@@ -5,6 +5,7 @@ using Feed.DTOs.Like;
 using Feed.Entities;
 using Feed.Repository.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Feed.Repository
@@ -25,9 +26,28 @@ namespace Feed.Repository
             using var connection = _context.GetConnection();
 
             var like = await connection.QueryFirstOrDefaultAsync<Like>(
-                "SELECT * FROM Like WHERE id = @Id", new { Id = id });
+                "SELECT * FROM FLike WHERE id = @Id", new { Id = id });
 
             return _mapper.Map<LikeDTO>(like);
+        }
+
+        public async Task<IEnumerable<LikeDTO>> GetPostLikes(int postId)
+        {
+            using var connection = _context.GetConnection();
+
+            var postLikes = await connection.QueryAsync<Like>(
+                "SELECT * FROM FLike WHERE postId = @postId", new { postId });
+
+            return _mapper.Map<IEnumerable<LikeDTO>>(postLikes);
+        }
+        public async Task<IEnumerable<LikeDTO>> GetCommentLikes(int commentId)
+        {
+            using var connection = _context.GetConnection();
+
+            var commentLikes = await connection.QueryAsync<Like>(
+                "SELECT * FROM FLike WHERE postId = @postId", new { commentId });
+
+            return _mapper.Map<IEnumerable<LikeDTO>>(commentLikes);
         }
 
         public async Task<int> CreateLike(CreateLikeDTO likeDTO)
@@ -35,7 +55,7 @@ namespace Feed.Repository
             using var connection = _context.GetConnection();
 
             var id = await connection.QueryFirstAsync<int>(
-                "INSERT INTO Like (UserId, PostId, CommentId)" +
+                "INSERT INTO FLike (UserId, PostId, CommentId)" +
                 "VALUES (@UserId, @PostId, @CommentId)" +
                 "RETURNING Id",
                 new {
@@ -51,7 +71,7 @@ namespace Feed.Repository
             using var connection = _context.GetConnection();
 
             var affected = await connection.ExecuteAsync(
-                 "DELETE FROM Like WHERE Id = @Id",
+                 "DELETE FROM FLike WHERE Id = @Id",
                 new { Id = id }
             );
 
@@ -63,7 +83,7 @@ namespace Feed.Repository
             using var connection = _context.GetConnection();
 
             var affected = await connection.ExecuteAsync(
-                "UPDATE Like SET UserId = @UserId, PostId = @PostId," +
+                "UPDATE FLike SET UserId = @UserId, PostId = @PostId," +
                 "CommentId = @CommentId, CreatedAt = @CreatedAt WHERE Id = @Id",
                 new {likeDTO.UserId, likeDTO.PostId, likeDTO.CommentId, likeDTO.CreatedAt, likeDTO.Id }
             );

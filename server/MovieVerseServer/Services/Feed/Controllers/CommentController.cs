@@ -3,6 +3,7 @@ using Feed.Repository.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Feed.Controllers
@@ -34,6 +35,24 @@ namespace Feed.Controllers
             CommentDTO commentDTO = await _repository.GetById(id);
 
             return commentDTO == null ? NotFound(null) : Ok(commentDTO);
+        }
+
+        [HttpGet("/postComments/{postId}")]
+        [ProducesResponseType(typeof(IEnumerable<CommentDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CommentDTO>>> GetPostComments(int postId)
+        {
+            IEnumerable<CommentDTO> comments = await _repository.GetPostComments(postId);
+
+            return comments == null ? NotFound(null) : Ok(comments);
+        }
+
+        [HttpGet("/postsWithHashTag/{hashTag}")]
+        [ProducesResponseType(typeof(IEnumerable<CommentDTO>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<CommentDTO>>> GetCommentsWithHashtag(string hashTag)
+        {
+            IEnumerable<CommentDTO> comments = await _repository.GetCommentsWithHashtag(hashTag);
+
+            return comments == null ? NotFound(null) : Ok(comments);
         }
 
         [HttpPut]

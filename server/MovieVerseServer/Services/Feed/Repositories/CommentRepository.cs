@@ -31,17 +31,36 @@ namespace Feed.Repository
             return _mapper.Map<CommentDTO>(comment);
         }
 
+        public async Task<IEnumerable<CommentDTO>> GetPostComments(int postId)
+        {
+            using var connection = _context.GetConnection();
+
+            var postComments = await connection.QueryAsync<Comment>(
+                "SELECT * FROM Comment WHERE postId = @postId", new { postId });
+
+            return _mapper.Map<IEnumerable<CommentDTO>>(postComments);
+        }
+
+        public async Task<IEnumerable<CommentDTO>> GetCommentsWithHashtag(string tag)
+        {
+            using var connection = _context.GetConnection();
+
+            var comments = await connection.QueryAsync<Comment>(
+                "SELECT * FROM Comment WHERE @tag = ANY(Hashtags)", new { tag });
+
+            return _mapper.Map<IEnumerable<CommentDTO>>(comments);
+        }
+
         public async Task<int> CreateComment(CreateCommentDTO comment)
         {
             using var connection = _context.GetConnection();
 
             var id = await connection.QueryFirstAsync<int>(
-                "INSERT INTO Comment (UserId, PostId, Text, HashTags, LikesNum)" +
-                "VALUES (@UserId, @PostId, @Text, @HashTags, @LikesNum)" +
+                "INSERT INTO Comment (UserId, PostId, Text, HashTags)" +
+                "VALUES (@UserId, @PostId, @Text, @HashTags)" +
                 "RETURNING Id",
                 new {
-                    comment.UserId, comment.PostId, comment.Text,
-                    comment.Hashtags, comment.LikesNum
+                    comment.UserId, comment.PostId, comment.Text, comment.Hashtags,
                 }
             );
 
@@ -66,26 +85,16 @@ namespace Feed.Repository
 
             var affected = await connection.ExecuteAsync(
                 "UPDATE Comment SET UserId = @UserId, PostId = @PostId," +
-                "Text = @Text, Hashtags = @Hashtags, LikesNum = @LikesNum," +
+                "Text = @Text, Hashtags = @Hashtags" +
                 "CreatedAt = @CreatedAt WHERE Id = @Id",
                 new {
                     comment.UserId, comment.PostId, comment.Text,
-                    comment.Hashtags, comment.LikesNum, comment.CreatedAt,
+                    comment.Hashtags, comment.CreatedAt,
                     comment.Id,
                 }
             );
 
             return affected != 0;
-        }
-
-        public async Task<IEnumerable<CommentDTO>> getPostComments(int postId)
-        {
-            using var connection = _context.GetConnection();
-
-            var postComments = await connection.QueryAsync<Comment>(
-                "SELECT * FROM Comment WHERE postId = @postId", new { postId = postId });
-
-            return _mapper.Map<IEnumerable<CommentDTO>>(postComments);
         }
     }
 }

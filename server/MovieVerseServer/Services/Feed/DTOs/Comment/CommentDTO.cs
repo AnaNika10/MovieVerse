@@ -1,6 +1,6 @@
 ﻿namespace Feed.DTOs.Comment
 {
-    public class CommentDTO : BaseIdentityLikeDTO
+    public class CommentDTO : BaseIdentityCommentDTO
     {
 
     }
