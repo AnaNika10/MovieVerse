@@ -11,7 +11,7 @@ services:
         image: ${DOCKER_REGISTRY-}feed
         build:
             context: .
-            dockerfile: Services/Feed/Dockerfile
+            dockerfile: Services/FeedService/Feed/Dockerfile
 
 volumes:
     postgres_data:
