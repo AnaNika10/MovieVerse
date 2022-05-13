@@ -1,5 +1,5 @@
-using Feed.Entities;
-using Feed.Store;
+using Feed.DTOs.Comment;
+using Feed.Repository.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,43 +11,43 @@ namespace Feed.Controllers
     [Route("api/v1/[controller]")]
     public class CommentController : ControllerBase
     {
-        private readonly CommentStore _store;
+        private readonly ICommentRepository _repository;
 
-        public CommentController(CommentStore store)
+        public CommentController(ICommentRepository repository)
         {
-            _store = store ?? throw new ArgumentNullException(nameof(store));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Comment), StatusCodes.Status201Created)]
-        public async Task<ActionResult<Comment>> CreateComment([FromBody] Comment comment)
+        [ProducesResponseType(typeof(CommentDTO), StatusCodes.Status201Created)]
+        public async Task<ActionResult<CommentDTO>> CreateComment([FromBody] CreateCommentDTO commentDTO)
         {
-            await _store.CreateEntity(comment);
-
-            return CreatedAtRoute("GetComment", new { id = comment.Id }, comment);
+            var Id = await _repository.CreateComment(commentDTO);
+            var comment = await _repository.GetById(Id);
+            return CreatedAtRoute("GetComment", new { id = Id}, comment);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetComment")]
-        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<ActionResult<Comment>> GetCommentById(string id)
+        [HttpGet(Name = "GetComment")]
+        [ProducesResponseType(typeof(CommentDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<CommentDTO>> GetCommentById(int id)
         {
-            Comment comment = await _store.GetById(id);
+            CommentDTO commentDTO = await _repository.GetById(id);
 
-            return comment == null ? NotFound(null) : Ok(comment);
+            return commentDTO == null ? NotFound(null) : Ok(commentDTO);
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateComment([FromBody] Comment comment)
+        [ProducesResponseType(typeof(CommentDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentDTO commentDTO)
         {
-            return Ok(await _store.UpdateEntity(comment));
+            return Ok(await _repository.UpdateComment(commentDTO));
         }
 
-        [HttpDelete("{id:length(24)}", Name = "DeleteComment")]
-        [ProducesResponseType(typeof(Comment), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteComment(string id)
+        [HttpDelete(Name = "DeleteComment")]
+        [ProducesResponseType(typeof(CommentDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteComment(int id)
         {
-            return Ok(await _store.DeleteEntity(id));
+            return Ok(await _repository.DeleteComment(id));
         }
     }
 }

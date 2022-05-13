@@ -1,3 +1,9 @@
+using Feed.Data;
+using Feed.DTOs.Comment;
+using Feed.DTOs.Like;
+using Feed.Entities;
+using Feed.Repository;
+using Feed.Repository.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +31,21 @@ namespace Feed
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IDatabaseContext, DatabaseContext>();
+            services.AddScoped<ILikeRepository, LikeRepository>();
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddAutoMapper(configuration =>
+            {
 
+                configuration.CreateMap<LikeDTO, Like>().ReverseMap();
+                configuration.CreateMap<CommentDTO, Comment>().ReverseMap();
+
+            });
+
+            services.AddMvc(options =>
+            {
+                options.SuppressAsyncSuffixInActionNames = false;
+            });
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

@@ -1,5 +1,5 @@
-﻿using Feed.Entities;
-using Feed.Store;
+﻿using Feed.DTOs.Like;
+using Feed.Repository.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,43 +11,43 @@ namespace Feed.Controllers
     [Route("api/v1/[controller]")]
     public class LikeController : ControllerBase
     {
-        private readonly LikeStore _store;
+        private readonly ILikeRepository _repository;
 
-        public LikeController(LikeStore store)
+        public LikeController(ILikeRepository repository)
         {
-            _store = store ?? throw new ArgumentNullException(nameof(store));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         [HttpPost]
-        [ProducesResponseType(typeof(Like), StatusCodes.Status201Created)]
-        public async Task<ActionResult<Like>> CreateLike([FromBody] Like like)
+        [ProducesResponseType(typeof(LikeDTO), StatusCodes.Status201Created)]
+        public async Task<ActionResult<LikeDTO>> CreateLike([FromBody] CreateLikeDTO likeDTO)
         {
-            await _store.CreateEntity(like);
-
-            return CreatedAtRoute("GetLike", new { id = like.Id }, like);
+            var Id = await _repository.CreateLike(likeDTO);
+            var like = await _repository.GetById(Id);
+            return CreatedAtRoute("GetLike", new { id = Id }, like);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetLike")]
-        [ProducesResponseType(typeof(Like), StatusCodes.Status200OK)]
-        public async Task<ActionResult<Like>> GetLikeById(string id)
+        [HttpGet(Name = "GetLike")]
+        [ProducesResponseType(typeof(LikeDTO), StatusCodes.Status200OK)]
+        public async Task<ActionResult<LikeDTO>> GetLikeById(int id)
         {
-            Like like = await _store.GetById(id);
+            LikeDTO likeDTO = await _repository.GetById(id);
 
-            return like == null ? NotFound(null) : Ok(like);
+            return likeDTO == null ? NotFound(null) : Ok(likeDTO);
         }
 
         [HttpPut]
-        [ProducesResponseType(typeof(Like), StatusCodes.Status200OK)]
-        public async Task<IActionResult> UpdateLike([FromBody] Like like)
+        [ProducesResponseType(typeof(LikeDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateLike([FromBody] UpdateLikeDTO likeDTO)
         {
-            return Ok(await _store.UpdateEntity(like));
+            return Ok(await _repository.UpdateLike(likeDTO));
         }
 
-        [HttpDelete("{id:length(24)}", Name = "DeleteLike")]
-        [ProducesResponseType(typeof(Like), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeleteLike(string id)
+        [HttpDelete(Name = "DeleteLike")]
+        [ProducesResponseType(typeof(LikeDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteLike(int id)
         {
-            return Ok(await _store.DeleteEntity(id));
+            return Ok(await _repository.DeleteLike(id));
         }
     }
 }

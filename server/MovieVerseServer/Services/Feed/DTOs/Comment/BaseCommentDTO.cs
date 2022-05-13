@@ -1,15 +1,13 @@
 ﻿using System;
 
-namespace Feed.Entities
+namespace Feed.DTOs.Comment
 {
-    public class Comment
+    public class BaseLikeDTO
     {
-        public int Id { get; set; }
         public string UserId { get; set; }
         public int PostId { get; set; }
         public string Text { get; set; }
         public string[] Hashtags { get; set; }
         public int LikesNum { get; set; }
-        public DateTime? CreatedAt { get; set; }
     }
 }

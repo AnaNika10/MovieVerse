@@ -1,0 +1,35 @@
+version: '3.4'
+
+services:
+  feeddb:
+    container_name: feeddb
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin1234
+      - POSTGRES_DB=FeedDB
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  pgadmin:
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=razvoj.softvera.matf@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=admin1234
+    restart: always
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/root/.pgadmin
+
+  feed:
+    container_name: feed
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - "DatabaseSettings:ConnectionString=Server=feeddb;Port=5432;Database=FeedDB;User Id=admin;Password=admin1234;"
+    depends_on:
+      - feeddb
+    ports:
+      - "8002:80"
