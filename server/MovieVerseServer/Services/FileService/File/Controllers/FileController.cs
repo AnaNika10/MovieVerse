@@ -50,14 +50,14 @@ namespace File.Controllers
             }
         }
 
-        public (string, string) GetUniqueFileNameAndPath()
+        private (string, string) GetUniqueFileNameAndPath()
         {
             var uniqueFileName = Path.GetRandomFileName();
             var uniqueFilePath = Path.Combine(_path, uniqueFileName);
             return (uniqueFileName, uniqueFilePath);
         }
         
-        public (string, string) GetOriginalFileNameAndExtension(string path)
+        private (string, string) GetOriginalFileNameAndExtension(string path)
         {
             var originalFileName = Path.GetFileName(path);
             originalFileName = WebUtility.HtmlEncode(originalFileName);
@@ -247,5 +247,56 @@ namespace File.Controllers
             return File(content, "video/" + mimeType + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
         }
 
+        [Route("[action]")]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status415UnsupportedMediaType)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        
+        public async Task<IActionResult>PostMultipleImages([FromForm]MultipleFilesModel files, string userId)
+        {
+            if(files.formFiles == null){
+                return BadRequest(new {message = "No images were sent"});
+            }
+            
+            
+            foreach(var file in files.formFiles){
+                
+                if(file.Length == 0 || file.Length > _config.GetValue<long>("FileSizeLimit")){
+                    return BadRequest(new {message = "Invalid file size of: " + file.FileName});
+                }
+                var (_, originalFileExt) = GetOriginalFileNameAndExtension(file.FileName); 
+                if(!FileFormatValidator.ValidFileExt(originalFileExt))
+                {
+                    return StatusCode(415, new {message = "Unsupported file format of: " + file.FileName});
+                }
+                if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.OpenReadStream())){
+                    _logger.LogInformation("File ext signature failed");
+                    return StatusCode(415, new {message = "File extension signature check failed: " + file.FileName});
+                }
+
+            }
+
+            List<string> imageIDs = new List<string>();
+            foreach (var file in files.formFiles)
+            {
+                var fileSize = file.Length;
+                var (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(file.FileName); 
+                var (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
+
+                using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
+                {
+                    
+                    await file.CopyToAsync(fileStream);
+                    _logger.LogInformation("OK");    
+                }
+
+                var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId, false); 
+                _repo.UploadFile(uploadedImg);
+                imageIDs.Add(uploadedImg.Id);
+            }
+            return Created("Image IDs", new {listOfImageIds = imageIDs.ToArray()});
+        }
     }
 }
