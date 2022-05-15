@@ -40,5 +40,27 @@ namespace File.Utilities.Antivirus
                 return false;
             } 
         }
+
+        public async Task<bool> ScanFileForViruses(byte[] content, ILogger<FileController> logger){
+
+            try{
+                using(var ms = new MemoryStream(content)){
+                    
+                    var scanResult = await _client.ScanDataAsync(ms);  
+                    
+                    logger.LogInformation("Infected? " + scanResult.Infected);
+                    if(scanResult.Infected)  
+                    {  
+                        logger.LogInformation(scanResult.VirusName);
+                        return false;  
+                    }
+                }
+                return true;
+            }
+            catch(Exception ex){
+                logger.LogInformation("Exception happened while scanning for viruses: {0}", ex.Message);
+                return false;
+            } 
+        }
     }
 }

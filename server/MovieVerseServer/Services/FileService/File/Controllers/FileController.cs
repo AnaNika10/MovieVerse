@@ -54,21 +54,6 @@ namespace File.Controllers
             }
         }
 
-        private (string, string) GetUniqueFileNameAndPath()
-        {
-            var uniqueFileName = Path.GetRandomFileName();
-            var uniqueFilePath = Path.Combine(_path, uniqueFileName);
-            return (uniqueFileName, uniqueFilePath);
-        }
-        
-        private (string, string) GetOriginalFileNameAndExtension(string path)
-        {
-            var originalFileName = Path.GetFileName(path);
-            originalFileName = WebUtility.HtmlEncode(originalFileName);
-            var originalFileExt = Path.GetExtension(path).ToLowerInvariant();
-            return (originalFileName, originalFileExt);
-        }
-
 
         [Route("[action]")]
         [HttpPost]
@@ -83,8 +68,8 @@ namespace File.Controllers
             {
                 
                 var fileSize = file.FormFile.Length;
-                var (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(file.FormFile.FileName); 
-                var (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
+                var (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FormFile.FileName); 
+                var (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
                 if(!FileFormatValidator.ValidFileExt(originalFileExt))
                 {
                     return StatusCode(415, new {message = "Unsupported file format"});
@@ -182,17 +167,17 @@ namespace File.Controllers
                     {
                         
 
-                        (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
-                        (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
+                        (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
+                        (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
                         
-                        var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
-                        if(!scanResult){
-                            return BadRequest(new {message = "Antivirus scan failed."});
-                        }
                         
                         var streamedFileContent = await FileHelpers.ProcessStreamedFile(
                             section, contentDisposition, ModelState,  _fileSizeLimit);
 
+                        var scanResult = await _antiVirus.ScanFileForViruses(streamedFileContent, _logger); 
+                        if(!scanResult){
+                            return BadRequest(new {message = "Antivirus scan failed."});
+                        }
                         if (!ModelState.IsValid)
                         {
                             return BadRequest(ModelState);
@@ -274,7 +259,7 @@ namespace File.Controllers
                 if(file.Length == 0 || file.Length > _config.GetValue<long>("FileSizeLimit")){
                     return BadRequest(new {message = "Invalid file size of: " + file.FileName});
                 }
-                var (_, originalFileExt) = GetOriginalFileNameAndExtension(file.FileName); 
+                (string _, string originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FileName); 
                 if(!FileFormatValidator.ValidFileExt(originalFileExt))
                 {
                     return StatusCode(415, new {message = "Unsupported file format of: " + file.FileName});
@@ -283,7 +268,7 @@ namespace File.Controllers
                     _logger.LogInformation("File ext signature failed");
                     return StatusCode(415, new {message = "File extension signature check failed: " + file.FileName});
                 }
-                var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
+                var scanResult = await _antiVirus.ScanFileForViruses(file, _logger); 
                 if(!scanResult){
                     return BadRequest(new {message = "Antivirus scan failed."});
                 }
@@ -294,8 +279,8 @@ namespace File.Controllers
             foreach (var file in files.formFiles)
             {
                 var fileSize = file.Length;
-                var (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(file.FileName); 
-                var (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
+                var (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FileName); 
+                var (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
 
                 using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
                 {
