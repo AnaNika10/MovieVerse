@@ -47,6 +47,7 @@ namespace File.Tests
             var controller = new FileController(env.Object, logger.Object, config, repo.Object);
             var form = new Mock<IFormFile>();
             form.Setup(f => f.Length).Returns(fSize);
+            form.Setup(f => f.FileName).Returns(originalFileName);
             var model = new FileModel();
             model.FormFile = form.Object;
             var res =  await controller.PostImage(model, "alice");
@@ -54,7 +55,7 @@ namespace File.Tests
             
             // then request fails
             Assert.NotNull(res);
-            Assert.Equal(statusCodeResult.StatusCode, StatusCodes.Status400BadRequest);
+            Assert.Equal(statusCodeResult.StatusCode, StatusCodes.Status415UnsupportedMediaType);
         }
 
         [Theory]

@@ -113,7 +113,7 @@ namespace File.Controllers
             }
             else
             {
-                return BadRequest();
+                return StatusCode(415, new {message = "Invalid file size."});
             }
         
         }
