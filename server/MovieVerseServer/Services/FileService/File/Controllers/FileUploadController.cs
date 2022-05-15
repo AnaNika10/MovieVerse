@@ -64,53 +64,43 @@ namespace File.Controllers
         
         public async Task<IActionResult>PostImage([FromForm]FileModel file, string userId, bool isAvatar=false)
         {
-            if(file.FormFile.Length > 0 && file.FormFile.Length < _config.GetValue<long>("FileSizeLimit"))
-            {
-                
-                var fileSize = file.FormFile.Length;
-                var (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FormFile.FileName); 
-                var (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
-                if(!FileFormatValidator.ValidFileExt(originalFileExt))
-                {
-                    return StatusCode(415, new {message = "Unsupported file format"});
-                }
-                
-                
-                if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.FormFile.OpenReadStream())){
-                    _logger.LogInformation("File ext signature failed");
-                    return StatusCode(415, new {message = "File extension signature check failed"});
-                }
-                if(isAvatar){
-                    var existingAvatar = await _repo.GetAvatar(userId);
-                    if(existingAvatar!=null){
-                       System.IO.File.Delete(existingAvatar.uniqueFilePath);
-                       bool isDeleteSuccessful = await _repo.DeleteAvatar(existingAvatar.Id);
-                        if(!isDeleteSuccessful){
-                            return StatusCode(500);
-                        }
+            (int code, string msg) = FileHelpers.ValidateFileProperties(file.FormFile, 
+                                                    _config.GetValue<long>("FileSizeLimit"),
+                                                    _logger);
+            if(code >= 400){
+                return StatusCode(code, new {message = msg});
+            }
+            
+            var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
+            
+            if(!scanResult){
+                return BadRequest(new {message = "Antivirus scan failed."});
+            }
+
+            if(isAvatar){
+                var existingAvatar = await _repo.GetAvatar(userId);
+                if(existingAvatar!=null){
+                    System.IO.File.Delete(existingAvatar.uniqueFilePath);
+                    bool isDeleteSuccessful = await _repo.DeleteAvatar(existingAvatar.Id);
+                    if(!isDeleteSuccessful){
+                        return StatusCode(500);
                     }
                 }
-                var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
-                if(!scanResult){
-                    return BadRequest(new {message = "Antivirus scan failed."});
-                }
-                
-                using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
-                {
-                    
-                    await file.FormFile.CopyToAsync(fileStream);
-                    _logger.LogInformation("OK");    
-                }
-                var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId, isAvatar); 
-                _repo.UploadFile(uploadedImg);
-                
-                return Created("Image ID", new {uploadedImgId = uploadedImg.Id});
             }
-            else
+            var fileSize = file.FormFile.Length;
+            var (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FormFile.FileName); 
+            var (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
+            using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
             {
-                return StatusCode(415, new {message = "Invalid file size."});
+                
+                await file.FormFile.CopyToAsync(fileStream);
+                _logger.LogInformation("OK");    
             }
-        
+            
+            var uploadedImg = new FileDTO(originalFileName, originalFileExt, fileSize, uniqueFileName, uniqueFilePath, userId, isAvatar); 
+            _repo.UploadFile(uploadedImg);
+            
+            return Created("Image ID", new {uploadedImgId = uploadedImg.Id});
         }
 
         [Route("[action]")]
@@ -165,8 +155,6 @@ namespace File.Controllers
                     }
                     else
                     {
-                        
-
                         (originalFileName, originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
                         (uniqueFileName, uniqueFilePath) =  FileFormatValidator.GetUniqueFileNameAndPath(_path);
                         
@@ -214,18 +202,13 @@ namespace File.Controllers
             
             foreach(var file in files.formFiles){
                 
-                if(file.Length == 0 || file.Length > _config.GetValue<long>("FileSizeLimit")){
-                    return BadRequest(new {message = "Invalid file size of: " + file.FileName});
+                (int code, string msg) = FileHelpers.ValidateFileProperties(file, 
+                                                    _config.GetValue<long>("FileSizeLimit"),
+                                                    _logger);
+                if(code >= 400){
+                    return StatusCode(code, new {message = msg});
                 }
-                (string _, string originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FileName); 
-                if(!FileFormatValidator.ValidFileExt(originalFileExt))
-                {
-                    return StatusCode(415, new {message = "Unsupported file format of: " + file.FileName});
-                }
-                if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.OpenReadStream())){
-                    _logger.LogInformation("File ext signature failed");
-                    return StatusCode(415, new {message = "File extension signature check failed: " + file.FileName});
-                }
+             
                 var scanResult = await _antiVirus.ScanFileForViruses(file, _logger); 
                 if(!scanResult){
                     return BadRequest(new {message = "Antivirus scan failed."});

@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc;
+using File.Controllers;
+using File.Utilities;
+using File.Utilities.Antivirus;
 namespace File.Utilities
 {
     public static class FileHelpers
@@ -60,6 +65,25 @@ namespace File.Utilities
             }
 
             return Array.Empty<byte>();
+        }
+
+        public static (int, string) ValidateFileProperties(IFormFile file, long sizeLimit,
+                                                                        ILogger<FileUploadController> logger)
+        {
+            if(file.Length == 0 || file.Length > sizeLimit){
+                return (415, "Invalid file size of: " + file.FileName);
+            }
+            (string _, string originalFileExt) = FileFormatValidator.GetOriginalFileNameAndExtension(file.FileName); 
+            if(!FileFormatValidator.ValidFileExt(originalFileExt))
+            {
+                return (415, "Unsupported file format of: " + file.FileName);
+            }
+            if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.OpenReadStream())){
+                logger.LogInformation("File ext signature failed");
+                return (415, "File extension signature check failed: " + file.FileName);
+            }
+
+            return (200, "Ok.");
         }
     }
 }
