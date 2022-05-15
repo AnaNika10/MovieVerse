@@ -298,5 +298,25 @@ namespace File.Controllers
             }
             return Created("Image IDs", new {listOfImageIds = imageIDs.ToArray()});
         }
+        [Route("[action]")]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult> GetMulltipleImages([FromQuery(Name = "ids[]")] string[] ids)
+        {
+            
+            var files = new List<FileContentResult>();
+            foreach(var id in ids){
+                var fileInfo = await _repo.GetFile(id);
+
+                if (fileInfo == null){
+                    return NotFound(new {message = "Image id: " + id});
+                }
+                var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
+                files.Add(File(content, "image/" + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName));
+            }
+            
+            return Ok(new {fetchedFiles = files.ToArray()}); 
+        }
     }
 }
