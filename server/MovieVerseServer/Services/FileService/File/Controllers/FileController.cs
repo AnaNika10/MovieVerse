@@ -13,6 +13,7 @@ using System.Net;
 using File.Repositories.Interfaces;
 using File.DTO;
 using File.Utilities;
+using File.Utilities.Antivirus;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
@@ -28,18 +29,21 @@ namespace File.Controllers
         public static IHostEnvironment _env;
         private readonly ILogger<FileController> _logger;
         public IConfiguration _config { get; }
+        public IAntiVirusContext _antiVirus;
         private string _path;
         private static readonly FormOptions _defaultFormOptions = new FormOptions();
         
         
         
         public FileController(IHostEnvironment env, ILogger<FileController> logger, 
-                                IConfiguration configuration, IFileRepository repo)
+                                IConfiguration configuration, IFileRepository repo,
+                                IAntiVirusContext antiVirus)
         {
             _env = env;
             _logger = logger;
             _config = configuration;
             _repo = repo;
+            _antiVirus = antiVirus;
             // Path.Combine should work both on Windows and Unix based OS
             _path = Path.Combine(_env.ContentRootPath, _config.GetValue<string>("FileUploadDirectory"));
             if(!Directory.Exists(_path))
@@ -64,6 +68,7 @@ namespace File.Controllers
             var originalFileExt = Path.GetExtension(path).ToLowerInvariant();
             return (originalFileName, originalFileExt);
         }
+
 
         [Route("[action]")]
         [HttpPost]
@@ -100,6 +105,11 @@ namespace File.Controllers
                         }
                     }
                 }
+                var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
+                if(!scanResult){
+                    return BadRequest(new {message = "Antivirus scan failed."});
+                }
+                
                 using (FileStream fileStream = new FileStream(uniqueFilePath, FileMode.Create, FileAccess.Write))
                 {
                     
@@ -174,14 +184,12 @@ namespace File.Controllers
 
                         (originalFileName, originalFileExt) = GetOriginalFileNameAndExtension(contentDisposition.FileName.Value); 
                         (uniqueFileName, uniqueFilePath) =  GetUniqueFileNameAndPath();
-                        // **WARNING!**
-                        // In the following example, the file is saved without
-                        // scanning the file's contents. In most production
-                        // scenarios, an anti-virus/anti-malware scanner API
-                        // is used on the file before making the file available
-                        // for download or for use by other systems. 
-                        // For more information, see the topic that accompanies 
-                        // this sample.
+                        
+                        var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
+                        if(!scanResult){
+                            return BadRequest(new {message = "Antivirus scan failed."});
+                        }
+                        
                         var streamedFileContent = await FileHelpers.ProcessStreamedFile(
                             section, contentDisposition, ModelState,  _fileSizeLimit);
 
@@ -274,6 +282,10 @@ namespace File.Controllers
                 if(!FileFormatValidator.VaildFileSignature(originalFileExt, file.OpenReadStream())){
                     _logger.LogInformation("File ext signature failed");
                     return StatusCode(415, new {message = "File extension signature check failed: " + file.FileName});
+                }
+                var scanResult = await _antiVirus.ScanFileForViruses(file.FormFile, _logger); 
+                if(!scanResult){
+                    return BadRequest(new {message = "Antivirus scan failed."});
                 }
 
             }

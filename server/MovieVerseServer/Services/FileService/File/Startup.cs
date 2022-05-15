@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using File.Data;
 using File.Repositories;
 using File.Repositories.Interfaces;
+using File.Utilities.Antivirus;
 namespace File
 {
     public class Startup
@@ -30,6 +31,7 @@ namespace File
 
             services.AddScoped<IFileContext, FileContext>();
             services.AddScoped<IFileRepository, FileRepository>();
+            services.AddScoped<IAntiVirusContext, AntiVirusContext>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
