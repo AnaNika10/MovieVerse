@@ -13,7 +13,7 @@ namespace File.Utilities.Antivirus
     {
         public IClamAvClient _client {get;}
 
-        public Task<bool> ScanFileForViruses(IFormFile file, ILogger<FileController> logger);
-        public Task<bool> ScanFileForViruses(byte[] content, ILogger<FileController> logger);
+        public Task<bool> ScanFileForViruses(IFormFile file, ILogger<FileUploadController> logger);
+        public Task<bool> ScanFileForViruses(byte[] content, ILogger<FileUploadController> logger);
     }
 }

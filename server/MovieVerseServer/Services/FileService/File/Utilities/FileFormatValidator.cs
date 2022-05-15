@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using File.Models;
 using Microsoft.Extensions.Logging;
@@ -107,6 +108,21 @@ namespace File.Utilities{
                 return false;
             }
             return true;
+        }
+
+        public static (string, string) GetUniqueFileNameAndPath(string path)
+        {
+            var uniqueFileName = Path.GetRandomFileName();
+            var uniqueFilePath = Path.Combine(path, uniqueFileName);
+            return (uniqueFileName, uniqueFilePath);
+        }
+        
+        public static (string, string) GetOriginalFileNameAndExtension(string path)
+        {
+            var originalFileName = Path.GetFileName(path);
+            originalFileName = WebUtility.HtmlEncode(originalFileName);
+            var originalFileExt = Path.GetExtension(path).ToLowerInvariant();
+            return (originalFileName, originalFileExt);
         }
 
     }

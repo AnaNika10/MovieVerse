@@ -18,7 +18,7 @@ namespace File.Utilities.Antivirus
             _client = ClamAvClient.Create(new Uri("tcp://127.0.0.1:3310"));
             
         }
-        public async Task<bool> ScanFileForViruses(IFormFile file, ILogger<FileController> logger)
+        public async Task<bool> ScanFileForViruses(IFormFile file, ILogger<FileUploadController> logger)
         {
             
             try{
@@ -41,7 +41,7 @@ namespace File.Utilities.Antivirus
             } 
         }
 
-        public async Task<bool> ScanFileForViruses(byte[] content, ILogger<FileController> logger){
+        public async Task<bool> ScanFileForViruses(byte[] content, ILogger<FileUploadController> logger){
 
             try{
                 using(var ms = new MemoryStream(content)){

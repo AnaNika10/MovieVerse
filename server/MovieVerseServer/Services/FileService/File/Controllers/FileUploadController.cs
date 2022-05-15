@@ -22,20 +22,20 @@ namespace File.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class FileController : ControllerBase
+    public class FileUploadController : ControllerBase
     {
 
         private readonly IFileRepository _repo;
         public static IHostEnvironment _env;
-        private readonly ILogger<FileController> _logger;
+        private readonly ILogger<FileUploadController> _logger;
         public IConfiguration _config { get; }
         public IAntiVirusContext _antiVirus;
-        private string _path;
+        private string _path {get;}
         private static readonly FormOptions _defaultFormOptions = new FormOptions();
         
         
         
-        public FileController(IHostEnvironment env, ILogger<FileController> logger, 
+        public FileUploadController(IHostEnvironment env, ILogger<FileUploadController> logger, 
                                 IConfiguration configuration, IFileRepository repo,
                                 IAntiVirusContext antiVirus)
         {
@@ -198,48 +198,6 @@ namespace File.Controllers
         }
 
         
-        [Route("[action]/{id}")]
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetImage(string id)
-        {
-            
-            var fileInfo = await _repo.GetFile(id);
-
-            if (fileInfo == null){
-                return NotFound();
-            }
-            
-            var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
-            
-            return File(content, "image/" + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
-        }
-
-        [Route("[action]/{id}")]
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetVideo(string id)
-        {
-            
-            var fileInfo = await _repo.GetFile(id);
-
-            if (fileInfo == null){
-                return NotFound();
-            }
-            
-            var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
-            var mimeType = "";
-            if(fileInfo.originalFileExt.Substring(1) == "mp4"){
-                mimeType = "mp4";
-            }
-            else if(fileInfo.originalFileExt.Substring(1) == "mkv"){
-                mimeType = "x-matroska";
-            }
-            return File(content, "video/" + mimeType + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName);
-        }
-
         [Route("[action]")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -294,26 +252,6 @@ namespace File.Controllers
                 imageIDs.Add(uploadedImg.Id);
             }
             return Created("Image IDs", new {listOfImageIds = imageIDs.ToArray()});
-        }
-        [Route("[action]")]
-        [HttpGet]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetMulltipleImages([FromQuery(Name = "ids[]")] string[] ids)
-        {
-            
-            var files = new List<FileContentResult>();
-            foreach(var id in ids){
-                var fileInfo = await _repo.GetFile(id);
-
-                if (fileInfo == null){
-                    return NotFound(new {message = "Image id: " + id});
-                }
-                var content = System.IO.File.ReadAllBytes(fileInfo.uniqueFilePath);
-                files.Add(File(content, "image/" + fileInfo.originalFileExt.Substring(1), fileInfo.originalFileName));
-            }
-            
-            return Ok(new {fetchedFiles = files.ToArray()}); 
         }
     }
 }

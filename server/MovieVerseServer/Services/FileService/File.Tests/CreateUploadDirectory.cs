@@ -8,6 +8,7 @@ using File.Controllers;
 using File.Repositories;
 using File.Repositories.Interfaces;
 using File.Data;
+using File.Utilities.Antivirus;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using System.Security.Principal;
@@ -36,12 +37,13 @@ namespace File.Tests
                                     .AddInMemoryCollection(_confOptions)
                                     .Build();
             var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
+            var logger = new Mock<ILogger<FileUploadController>>();
             var repo = new Mock<IFileRepository>();
+            var antiVirus = new AntiVirusContext();
             env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
         
-            // when FileController is created
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+            // when FileUploadController is created
+            var controller = new FileUploadController(env.Object, logger.Object, config, repo.Object, antiVirus);
 
             // then upload dir is created 
             var dirPath = Path.Combine(_ContentRootPath, _uploadPath);
@@ -52,20 +54,21 @@ namespace File.Tests
         }
         
         [Fact]
-        public void CreationOfMultipleFileControllers_ResultsInUniqueUploadDirectory()
+        public void CreationOfMultipleFileUploadControllers_ResultsInUniqueUploadDirectory()
         {
             //given DI arguments for construction of FileCOntroller
             var config = new ConfigurationBuilder()
                                     .AddInMemoryCollection(_confOptions)
                                     .Build();
             var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
+            var logger = new Mock<ILogger<FileUploadController>>();
             var repo = new Mock<IFileRepository>();
+            var antiVirus = new AntiVirusContext();
             env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
             
             // when multiple controllers are created
-            var controller1 = new FileController(env.Object, logger.Object, config, repo.Object);
-            var controller2 = new FileController(env.Object, logger.Object, config, repo.Object);
+            var controller1 = new FileUploadController(env.Object, logger.Object, config, repo.Object, antiVirus);
+            var controller2 = new FileUploadController(env.Object, logger.Object, config, repo.Object, antiVirus);
             
 
             //then unique upload directory exists
@@ -84,12 +87,13 @@ namespace File.Tests
                                     .AddInMemoryCollection(_confOptions)
                                     .Build();
             var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
+            var logger = new Mock<ILogger<FileUploadController>>();
             var repo = new Mock<IFileRepository>();
+            var antivirus = new AntiVirusContext();
             env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
             
             // when upload dir is created
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+            var controller = new FileUploadController(env.Object, logger.Object, config, repo.Object, antivirus);
             
 
             //then it has no execute permissions

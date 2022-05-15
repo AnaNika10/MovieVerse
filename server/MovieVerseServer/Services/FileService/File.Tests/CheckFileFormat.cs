@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using File.Controllers;
 using File.Models;
 using File.Utilities;
+using File.Utilities.Antivirus;
 using File.Repositories.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
@@ -38,13 +39,14 @@ namespace File.Tests
                                     .AddInMemoryCollection(_confOptions)
                                     .Build();
             var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
+            var logger = new Mock<ILogger<FileUploadController>>();
             var repo = new Mock<IFileRepository>();
+            var antiVirus = new AntiVirusContext();
             env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
             var originalFileName = "foo.mp4";
         
             // when posting image of invalid size
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
+            var controller = new FileUploadController(env.Object, logger.Object, config, repo.Object, antiVirus);
             var form = new Mock<IFormFile>();
             form.Setup(f => f.Length).Returns(fSize);
             form.Setup(f => f.FileName).Returns(originalFileName);

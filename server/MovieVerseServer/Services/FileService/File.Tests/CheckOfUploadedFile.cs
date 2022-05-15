@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using File.Controllers;
 using File.Repositories.Interfaces;
+using File.Utilities.Antivirus;
+using File.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Moq;
@@ -28,19 +30,11 @@ namespace File.Tests
         [Fact]
         public void UploadedFile_IsHTMLEncoded()
         {
-            // given DI arguments for construction of FileController and file name
-            var config = new ConfigurationBuilder()
-                                    .AddInMemoryCollection(_confOptions)
-                                    .Build();
-            var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
-            var repo = new Mock<IFileRepository>();
-            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
+            // given file name
             var originalFileName = "foo.mp4";
-        
+
             // when preprocessing file
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
-            var (htmlEncodedName, _) = controller.GetOriginalFileNameAndExtension(originalFileName);
+            (string htmlEncodedName, string _) = FileFormatValidator.GetOriginalFileNameAndExtension(originalFileName);
 
             // then file name is html encoded
             Assert.Equal(HttpUtility.HtmlDecode(htmlEncodedName), originalFileName);
@@ -50,19 +44,13 @@ namespace File.Tests
         [Fact]
         public void SafeFileNameAndPath_AreGenerated()
         {
-            // given DI arguments for construction of FileController and file name
-            var config = new ConfigurationBuilder()
-                                    .AddInMemoryCollection(_confOptions)
-                                    .Build();
-            var env = new Mock<IHostEnvironment>();
-            var logger = new Mock<ILogger<FileController>>();
-            var repo = new Mock<IFileRepository>();
-            env.Setup(e => e.ContentRootPath).Returns(_ContentRootPath);
+            // given file name and upload path
+
             var originalFileName = "foo.mp4";
+            var uploadPath = "/home/marija/Desktop/MovieVerse/server/MovieVerseServer/Services/FileService/File/Upload";
         
             // when preprocessing file
-            var controller = new FileController(env.Object, logger.Object, config, repo.Object);
-            var (newFileName, newFilePath) = controller.GetUniqueFileNameAndPath();
+            (string newFileName, string newFilePath) = FileFormatValidator.GetUniqueFileNameAndPath(uploadPath);
 
             // then random file name and unique file path are generated
             Assert.False(newFileName == originalFileName);
