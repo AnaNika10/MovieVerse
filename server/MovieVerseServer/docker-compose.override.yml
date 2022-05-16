@@ -24,7 +24,7 @@ services:
     volumes:
       - pgadmin_data:/root/.pgadmin
 
-  feed1:
+  feed:
     container_name: feed
     environment:
       - ASPNETCORE_ENVIRONMENT=Development

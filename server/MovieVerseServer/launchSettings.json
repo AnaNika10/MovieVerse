@@ -3,11 +3,11 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "composeLaunchAction": "LaunchBrowser",
-      "composeLaunchServiceName": "feed1",
+      "composeLaunchServiceName": "feed",
       "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/swagger",
       "commandVersion": "1.0",
       "serviceActions": {
-        "feed1": "StartDebugging",
+        "feed": "StartDebugging",
         "feeddb": "StartWithoutDebugging",
         "pgadmin": "StartWithoutDebugging"
       }
