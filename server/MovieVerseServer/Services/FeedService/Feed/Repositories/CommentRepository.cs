@@ -12,10 +12,10 @@ namespace Feed.Repository
 {
     public class CommentRepository : ICommentRepository
     {
-        private readonly IDatabaseContext _context;
+        private readonly IFeedContext _context;
         private readonly IMapper _mapper;
 
-        public CommentRepository(IDatabaseContext context, IMapper mapper)
+        public CommentRepository(IFeedContext context, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

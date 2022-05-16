@@ -12,10 +12,10 @@ namespace Feed.Repository
 {
     public class LikeRepository : ILikeRepository
     {
-        private readonly IDatabaseContext _context;
+        private readonly IFeedContext _context;
         private readonly IMapper _mapper;
 
-        public LikeRepository(IDatabaseContext context, IMapper mapper)
+        public LikeRepository(IFeedContext context, IMapper mapper)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));

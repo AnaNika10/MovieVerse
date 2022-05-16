@@ -6,7 +6,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 WORKDIR /src
-COPY ["Services/Feed/Feed.csproj", "Services/Feed/"]
+COPY ["Services/FeedService/Feed/Feed.csproj", "Services/Feed/"]
 RUN dotnet restore "Services/Feed/Feed.csproj"
 COPY . .
 WORKDIR "/src/Services/Feed"

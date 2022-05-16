@@ -1,6 +1,8 @@
 using Feed.Data;
 using Feed.DTOs.Comment;
 using Feed.DTOs.Like;
+using Feed.DTOs.Post;
+using Feed.DTOs.Follow;
 using Feed.Entities;
 using Feed.Repository;
 using Feed.Repository.Interfaces;
@@ -16,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Feed.Repositories;
 
 namespace Feed
 {
@@ -31,14 +34,19 @@ namespace Feed
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IDatabaseContext, DatabaseContext>();
+            
             services.AddScoped<ILikeRepository, LikeRepository>();
             services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<IFeedContext, FeedContext>();
+            services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IFollowRepository, FollowRepository>();
             services.AddAutoMapper(configuration =>
             {
 
                 configuration.CreateMap<LikeDTO, Like>().ReverseMap();
                 configuration.CreateMap<CommentDTO, Comment>().ReverseMap();
+                configuration.CreateMap<PostDTO, Post>().ReverseMap();
+                configuration.CreateMap<FollowDTO, Follow>().ReverseMap();
 
             });
 

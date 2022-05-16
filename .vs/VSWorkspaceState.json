@@ -1,16 +1,7 @@
 {
   "ExpandedNodes": [
-    "",
-    "\\server",
-    "\\server\\MovieVerseServer",
-    "\\server\\MovieVerseServer\\Services",
-    "\\server\\MovieVerseServer\\Services\\Feed1",
-    "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1",
-    "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1\\Controllers",
-    "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1\\DTOs",
-    "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1\\Entities",
-    "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1\\Repositories"
+    ""
   ],
-  "SelectedNode": "\\server\\MovieVerseServer\\Services\\Feed1\\Feed1\\Controllers\\PostController.cs",
+  "SelectedNode": "\\MovieVerseServer.sln",
   "PreviewInSolutionExplorer": false
 }
