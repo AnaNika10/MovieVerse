@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Feed.Repositories;
 using Feed.Repository.Interfaces;
 
-namespace Feed
+namespace Feed.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]

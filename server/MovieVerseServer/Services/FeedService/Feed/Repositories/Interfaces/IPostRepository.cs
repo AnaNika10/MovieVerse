@@ -8,9 +8,10 @@ namespace Feed.Repository.Interfaces
     {
         Task<IEnumerable<PostDTO>> GetAllPosts();
         Task<bool> UpdatePost(UpdatePostDTO postDTO);
-        Task<bool> CreatePost(CreatePostDTO postDTO);
+        Task<int> CreatePost(CreatePostDTO postDTO);
         Task<IEnumerable<PostDTO>> GetPostByUser(string userId);
         Task<PostDTO> GetPostByDateAndUser(DateTime CreatedDate, string UserId);
         Task<bool> DeletePost(int postId);
+        Task<PostDTO> GetById(int id);
     }
 }

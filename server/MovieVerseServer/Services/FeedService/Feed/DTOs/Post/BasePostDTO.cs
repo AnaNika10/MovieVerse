@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Feed.DTOs.Post
 {
     public class BasePostDTO
@@ -10,5 +12,8 @@ namespace Feed.DTOs.Post
         public string[] FilesUrls { get; set; }
         //   public Comment[] ListOfComments { get; set;}
         public DateTime CreatedDate { get; set; }
+
+ 
+
     }
 }

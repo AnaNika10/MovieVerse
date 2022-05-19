@@ -21,25 +21,33 @@ namespace Feed.Repositories
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<bool> CreatePost(CreatePostDTO postDTO)
+        public async Task<int> CreatePost(CreatePostDTO postDTO)
         {  
             using var connection = _context.GetConnection();
 
-          var affected =   await connection.ExecuteAsync(
-                "insert into post (\"PostText\",\"UserId\",\"CreatedDate\") values(@Text, @UserId, @CreatedAt)",
+          int id =   await connection.QueryFirstOrDefaultAsync(
+                "insert into \"Post\" (\"PostText\",\"UserId\",\"CreatedDate\") values (@Text, @UserId, @CreatedAt) RETURNING \"PostId\"",
                 new { Text = postDTO.PostText, UserId = postDTO.UserId, CreatedAt = postDTO.CreatedDate } );
-            if (affected == 0)
-                return false;
-            return true;
-             
-            
+         
+            return id;
+
+        }
+
+        public async Task<PostDTO> GetById(int PostId)
+        {
+            using var connection = _context.GetConnection();
+
+            var post = await connection.QueryFirstOrDefaultAsync<Post>(
+                "SELECT * FROM \"Post\" WHERE \"PostId\" = @Id", new { Id = PostId });
+
+            return _mapper.Map<PostDTO>(post);
         }
 
         public async Task<PostDTO> GetPostByDateAndUser(DateTime CreatedDate, string UserId)
         {
             using var connection = _context.GetConnection();
             var post = await connection.QueryFirstOrDefaultAsync<Post>(
-                 "SELECT * FROM post WHERE \"CreatedDate\" = @CreatedDate AND \"UserId\"=@UserId", new { CreatedDate = CreatedDate, UserId = UserId });
+                 "SELECT * FROM \"Post\" WHERE \"CreatedDate\" = @CreatedDate AND \"UserId\"=@UserId", new { CreatedDate = CreatedDate, UserId = UserId });
 
             return _mapper.Map<PostDTO>(post);
         }
@@ -49,7 +57,7 @@ namespace Feed.Repositories
             using var connection = _context.GetConnection();
 
             var posts = await connection.QueryAsync<Post>(
-              "SELECT * FROM post WHERE \"UserId\"=@Id", new { Id = userId }
+              "SELECT * FROM \"Post\" WHERE \"UserId\"=@Id", new { Id = userId }
 
               );
             return _mapper.Map<IEnumerable<PostDTO>>(posts);
@@ -64,7 +72,7 @@ namespace Feed.Repositories
             using var connection = _context.GetConnection();
 
             var posts = await connection.QueryAsync<Post>(
-                "SELECT * FROM post"
+                "SELECT * FROM \"Post\""
 
                 );
 
@@ -79,7 +87,7 @@ namespace Feed.Repositories
 
             var affected = await connection.ExecuteAsync(
 
-                "UPDATE post SET \"PostText\"=@PostText, \"Hashtags\" = @Hashtags, \"FilesUrls\" = @FilesUrls WHERE \"PostId\" = @PostId",
+                "UPDATE \"Post\" SET \"PostText\"=@PostText, \"Hashtags\" = @Hashtags, \"FilesUrls\" = @FilesUrls WHERE \"PostId\" = @PostId",
                 new { postDTO.PostText, postDTO.Hashtags, postDTO.FilesUrls, postDTO.PostId });
 
             if (affected == 0)
@@ -92,7 +100,7 @@ namespace Feed.Repositories
             using var connection = _context.GetConnection();
 
             var affected = await connection.ExecuteAsync(
-                "DELETE FROM post WHERE \"PostId\" = @postId",
+                "DELETE FROM \"Post\" WHERE \"PostId\" = @postId",
                 new { postId });
 
             if (affected == 0)

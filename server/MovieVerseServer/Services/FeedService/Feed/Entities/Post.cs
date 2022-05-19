@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 namespace Feed.Entities
 {
     public class Post
@@ -9,7 +11,7 @@ namespace Feed.Entities
         public string[] Hashtags { get; set; }
         public int NumOfLikes { get; set; }
         public string[] FilesUrls { get; set; }
-     //   public Comment[] ListOfComments { get; set;}
+        //   public Comment[] ListOfComments { get; set;}
         public DateTime? CreatedDate { get; set; }
     }
 }

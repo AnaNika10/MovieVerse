@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Feed.Repository.Interfaces;
 
-namespace Feed
+namespace Feed.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -20,7 +20,7 @@ namespace Feed
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        [HttpGet("{userId}")]
+        [HttpGet("user/{userId}")]
         [ProducesResponseType(typeof(IEnumerable<PostDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<PostDTO>>> GetPostByUser(string userId)
@@ -58,31 +58,63 @@ namespace Feed
             }
             return Ok(post);
         }
+        [HttpGet("{PostId}", Name = nameof(GetById))]
+        [ProducesResponseType(typeof(PostDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PostDTO>> GetById(int PostId)
+        {
+            var post = await _repository.GetById(PostId);
+            if (post == null)
+            {
+                return NotFound(null);
+            }
+            return Ok(post);
+        }
 
 
         [HttpPost]
         [ProducesResponseType(typeof(PostDTO), StatusCodes.Status201Created)]
         public async Task<ActionResult<PostDTO>> CreatePost([FromBody] CreatePostDTO postDTO)
         {
-            await _repository.CreatePost(postDTO);
-            var post = await _repository.GetPostByDateAndUser(postDTO.CreatedDate,postDTO.UserId);
-            return CreatedAtRoute("GetPostByDateAndUser", new { createdDate = post.CreatedDate, userId = post.UserId}, post);
+            int Id = await _repository.CreatePost(postDTO);
+            var post = await _repository.GetById(Id);
+            return CreatedAtRoute("GetById", new { post.PostId },post);
+
         }
         [HttpPut]
-        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PostDTO), StatusCodes.Status200OK)]
         public async Task<ActionResult<PostDTO>> UpdatePost([FromBody] UpdatePostDTO postDTO)
         {
             await _repository.UpdatePost(postDTO);
 
-            var post = await _repository.GetPostByDateAndUser(postDTO.CreatedDate, postDTO.UserId);
-            return CreatedAtRoute("GetPostByDateAndUser", new { createdDate = post.CreatedDate, userId = post.UserId }, post);
+            var post = await _repository.GetById(postDTO.PostId);
+            return CreatedAtRoute("GetById", new { post.PostId }, post);
         }
 
         [HttpDelete("{postId}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<ActionResult<bool>> DeletePost(int postId)
         {
-            return Ok(await _repository.DeletePost(postId));
+                var success = await _repository.DeletePost(postId);
+                if (success)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
+                //var existingItem = await repository.GetItemAsync(id);
+
+                //if (existingItem is null)
+                //{
+                //    return NotFound();
+                //}
+
+                //await repository.DeletePost(id);
+
+                //return NoContent();
+            
         }
 
     }
