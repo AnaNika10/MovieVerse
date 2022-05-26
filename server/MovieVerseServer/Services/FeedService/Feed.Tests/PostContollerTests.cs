@@ -27,7 +27,7 @@ namespace Feed.Tests
             var controller = new PostController(repositoryStub.Object);
 
             //Act
-            var result = await controller.GetPostByUser(Guid.NewGuid().ToString());
+            var result = await controller.GetPostsByUser(Guid.NewGuid().ToString());
             //Assert
             result.Result.Should().BeOfType<NotFoundResult>();
 
@@ -44,7 +44,7 @@ namespace Feed.Tests
             var controller = new PostController(repositoryStub.Object);
 
             //Act
-            var result = await controller.GetPostByUser(userId);
+            var result = await controller.GetPostsByUser(userId);
             //Assert
 
 
@@ -119,7 +119,7 @@ namespace Feed.Tests
         }
 
         [Fact]
-        public async void DeleteItemAsync_WithExistingItem_ReturnsOk()
+        public async void DeletePost_WithExistingItem_ReturnsOk()
         {
             // Arrange
             PostDTO existingItem = GetRandomPost();
@@ -135,7 +135,7 @@ namespace Feed.Tests
         }
 
         [Fact]
-        public async void DeleteItemAsync_WithNonExestingItem_ReturnsNotFound()
+        public async void DeletePost_WithNonExestingItem_ReturnsNotFound()
         {
             // Arrange
             PostDTO existingItem = GetRandomPost();

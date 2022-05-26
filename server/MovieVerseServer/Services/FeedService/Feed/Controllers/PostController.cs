@@ -23,7 +23,7 @@ namespace Feed.Controllers
         [HttpGet("user/{userId}")]
         [ProducesResponseType(typeof(IEnumerable<PostDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<PostDTO>>> GetPostByUser(string userId)
+        public async Task<ActionResult<IEnumerable<PostDTO>>> GetPostsByUser(string userId)
         {
             var posts = await _repository.GetPostByUser(userId);
             if (posts == null)

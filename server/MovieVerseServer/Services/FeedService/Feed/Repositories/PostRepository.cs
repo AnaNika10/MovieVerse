@@ -25,7 +25,7 @@ namespace Feed.Repositories
         {  
             using var connection = _context.GetConnection();
 
-          int id =   await connection.QueryFirstOrDefaultAsync(
+          int id = await connection.QueryFirstAsync<int>(
                 "insert into \"Post\" (\"PostText\",\"UserId\",\"CreatedDate\") values (@Text, @UserId, @CreatedAt) RETURNING \"PostId\"",
                 new { Text = postDTO.PostText, UserId = postDTO.UserId, CreatedAt = postDTO.CreatedDate } );
          
