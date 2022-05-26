@@ -72,7 +72,7 @@ namespace File.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult> GetMulltipleImages([FromQuery(Name = "ids[]")] string[] ids)
+        public async Task<ActionResult> GetMultipleImages([FromQuery(Name = "ids[]")] string[] ids)
         {
             
             var files = new List<FileContentResult>();
