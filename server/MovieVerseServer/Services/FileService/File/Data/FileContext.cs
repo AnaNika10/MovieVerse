@@ -13,7 +13,7 @@ namespace File.Data
         
         public FileContext()
         {
-            var client = new MongoClient("mongodb://localhost:27017");
+            var client = new MongoClient("mongodb://host.docker.internal:27017");
             var database = client.GetDatabase("FileDB");
 
             Files = database.GetCollection<FileDTO>("Files");

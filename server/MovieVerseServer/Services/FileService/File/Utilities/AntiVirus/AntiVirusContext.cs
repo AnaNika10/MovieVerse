@@ -15,7 +15,7 @@ namespace File.Utilities.Antivirus
         public IClamAvClient _client {get;}
         public AntiVirusContext()
         {
-            _client = ClamAvClient.Create(new Uri("tcp://127.0.0.1:3310"));
+            _client = ClamAvClient.Create(new Uri("tcp://host.docker.internal:3310"));
             
         }
         public async Task<bool> ScanFileForViruses(IFormFile file, ILogger<FileUploadController> logger)
@@ -36,7 +36,7 @@ namespace File.Utilities.Antivirus
                 return true;
             }
             catch(Exception ex){
-                logger.LogInformation("Exception happened while scanning for viruses: {0}", ex.Message);
+                logger.LogInformation("Exception happened while scanning for viruses: {0} {1}", ex.Message, ex.InnerException);
                 return false;
             } 
         }

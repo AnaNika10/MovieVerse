@@ -1,0 +1,24 @@
+services:
+    clamav:
+      container_name: clamav
+      # restart: always
+      volumes:
+        - clam_data:/var/lib/clamav
+      ports:
+        - 3310:3310
+        - 7357:7357
+    filedb:
+      container_name: filedb
+      restart: always
+      ports:
+        - 27017:27017
+      volumes:
+        - mongo_data:/data/db
+    file:
+      container_name: fileservice
+      environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      depends_on:
+        - filedb
+        - clamav
+      
