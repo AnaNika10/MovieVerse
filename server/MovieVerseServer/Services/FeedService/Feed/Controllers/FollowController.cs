@@ -58,13 +58,26 @@ namespace Feed.Controllers
             }
             return Ok(follows);
         }
+
+        [HttpGet("{FollowId}", Name = nameof(GetById))]
+        [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<FollowDTO>> GetById(int FollowId)
+        {
+            var f = await _repository.GetById(FollowId);
+            if (f == null)
+            {
+                return NotFound(null);
+            }
+            return Ok(f);
+        }
         [HttpPost]
         [ProducesResponseType(typeof(FollowDTO), StatusCodes.Status201Created)]
         public async Task<ActionResult<FollowDTO>> CreateFollow([FromBody] CreateFollowDTO followDTO)
         {
-            await _repository.CreateFollow(followDTO);
-            var follow = await _repository.GetFollowUsersAndDate(followDTO.FollowFromUserId,followDTO.FollowToUserId,followDTO.CreatedDate);
-            return CreatedAtRoute("GetFollowUsersAndDate", new { createdDate = follow.CreatedDate, FromUserId=follow.FollowFromUserId, ToUserId=follow.FollowToUserId }, follow);
+            int id = await _repository.CreateFollow(followDTO);
+            var f = await _repository.GetById(id);
+            return CreatedAtRoute("GetById", new { f.FollowId }, f);
 
         }
    
@@ -73,7 +86,15 @@ namespace Feed.Controllers
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         public async Task<ActionResult<bool>> DeleteFollow(int followId)
         {
-            return Ok(await _repository.DeleteFollow(followId));
+            var success = await _repository.DeleteFollow(followId);
+            if (success)
+            {
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }

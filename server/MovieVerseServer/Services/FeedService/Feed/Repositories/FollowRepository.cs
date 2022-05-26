@@ -22,16 +22,14 @@ namespace Feed.Repositories
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<bool> CreateFollow(CreateFollowDTO followDTO)
+        public async Task<int> CreateFollow(CreateFollowDTO followDTO)
         {
             using var connection = _context.GetConnection();
 
-            var affected = await connection.ExecuteAsync(
-                  "INSERT INTO follow (\"FollowFromUserId\",\"FollowToUserId\",\"CreatedDate\") values (@FollowFromUserId, @FollowToUserId, @CreatedDate)",
+            var id = await connection.QueryFirstAsync<int>(
+                  "INSERT INTO follow (\"FollowFromUserId\",\"FollowToUserId\",\"CreatedDate\") values (@FollowFromUserId, @FollowToUserId, @CreatedDate) RETURNING \"FollowId\"",
                   new { FollowFromUserId = followDTO.FollowFromUserId, FollowToUserId = followDTO.FollowToUserId, CreatedDate = followDTO.CreatedDate });
-            if (affected == 0)
-                return false;
-            return true;
+            return id;
         }
 
         public async Task<bool> DeleteFollow(int followId)
@@ -46,6 +44,16 @@ namespace Feed.Repositories
                 return false;
 
             return true;
+        }
+
+        public async Task<FollowDTO> GetById(int id)
+        {
+            using var connection = _context.GetConnection();
+
+            var f = await connection.QueryFirstOrDefaultAsync<Follow>(
+                "SELECT * FROM \"Follow\" WHERE \"FollowId\" = @Id", new { Id = id });
+
+            return _mapper.Map<FollowDTO>(f);
         }
 
         public async Task<FollowDTO> GetFollowUsersAndDate(string FromUserId, string ToUserId, DateTime CreatedDate)

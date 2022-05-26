@@ -8,11 +8,11 @@ namespace Feed.Repository.Interfaces
     {
 
   
-        Task<bool> CreateFollow(CreateFollowDTO postDTO);
+        Task<int> CreateFollow(CreateFollowDTO postDTO);
         Task<IEnumerable<FollowDTO>> GetUserFollowers(string userId);
         Task<IEnumerable<FollowDTO>> GetUserFollowing(string userId);
         Task<FollowDTO> GetFollowUsersAndDate(string FromUserId, string ToUserId, DateTime CreatedDate);
-
+        Task<FollowDTO> GetById(int id);
         Task<bool> DeleteFollow(int followId);
     }
 }
